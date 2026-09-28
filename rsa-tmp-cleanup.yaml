@@ -1,0 +1,56 @@
+name: rsa-tmp-cleanup
+description: >
+  Delete the /tmp/ ad-hoc probe scripts created during today's RSA work.
+  These were debug/test helpers that should not be in the user's home
+  directory. Bounded, idempotent, no-op when files are already gone.
+class: mutate
+args:
+  apply:
+    type: bool
+    default: false
+halt_on_failure: false
+timeout: 30
+steps:
+  - name: list
+    cmd: |
+      estate_invoke intent=pobr-gate 2>&1 | head -10
+      bash -c "      echo "=== /tmp files from today's RSA session (will be removed) ==="
+      ls -l /tmp/calc_offline.py /tmp/check_import.py /tmp/check_import2.py \
+      "
+            /tmp/check_in_voice.py /tmp/check_turnlog.py /tmp/check_turns_endpoint.py \
+            /tmp/ensure_voice_db.py /tmp/probe.py /tmp/probe2.py /tmp/probe3.py \
+            /tmp/probe4.py /tmp/probe5.py /tmp/render-actual-panel.js \
+            /tmp/render.cts.mjs /tmp/serve_rsa.py /tmp/show-panel.py \
+            /tmp/show-turns.py /tmp/start-live.sh /tmp/test-rsa-panel-render.tsx \
+            /tmp/which_sovereign.py 2>&1 | head -25 || echo "(none — already clean)"
+      echo
+      echo "=== /tmp/rsa-render/ node workspace (will be removed) ==="
+      ls -la /tmp/rsa-render/ 2>&1 | head -10 || echo "(none — already gone)"
+    timeout: 10
+  - name: delete
+    cmd: |
+      rm -f /tmp/calc_offline.py /tmp/check_import.py /tmp/check_import2.py \
+            /tmp/check_in_voice.py /tmp/check_turnlog.py /tmp/check_turns_endpoint.py \
+            /tmp/ensure_voice_db.py /tmp/probe.py /tmp/probe2.py /tmp/probe3.py \
+            /tmp/probe4.py /tmp/probe5.py /tmp/render-actual-panel.js \
+            /tmp/render.cts.mjs /tmp/serve_rsa.py /tmp/show-panel.py \
+            /tmp/show-turns.py /tmp/start-live.sh /tmp/test-rsa-panel-render.tsx \
+            /tmp/which_sovereign.py
+      rm -rf /tmp/rsa-render
+      echo "deleted /tmp RSA ad-hoc files + /tmp/rsa-render workspace"
+      echo
+      echo "=== verify clean ==="
+      ls /tmp/calc_offline.py /tmp/serve_rsa.py /tmp/rsa-render 2>&1 | head -5 || echo "(verified: no remaining rsa-* /tmp files)"
+    timeout: 10
+  - name: inventory
+    cmd: |
+      echo "=== platform/rsa/ tree (the keeper) ==="
+      cd /Users/roseonyema/Documents/code/idp
+      find platform/rsa -type f -not -path '*/target/*' 2>&1 | sort
+      echo
+      echo "=== fleetview-backend changed files this session ==="
+      git diff --stat HEAD -- backstage/plugins/fleetview-backend/src/ backstage/plugins/fleetview-backend/tests/ 2>&1 | head -20
+      echo
+      echo "=== RSA intents currently registered ==="
+      ls /Users/roseonyema/.estate/intents/rsa-*.yaml 2>&1
+    timeout: 10

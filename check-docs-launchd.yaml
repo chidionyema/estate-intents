@@ -1,0 +1,8 @@
+name: check-docs-launchd
+description: Check docs and launchd
+halt_on_failure: false
+steps:
+  - name: run
+    timeout: 60
+    cmd: >
+      python3 /Users/roseonyema/.estate/scripts/check-docs-launchd.py

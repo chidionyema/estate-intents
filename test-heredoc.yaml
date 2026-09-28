@@ -1,0 +1,7 @@
+name: test-heredoc
+description: Verify script syntax
+args: {}
+halt_on_failure: false
+steps:
+  - name: syntax-check
+    cmd: "python3 -c \"import py_compile; py_compile.compile('/Users/roseonyema/.estate/libexec/mutation-run.py', doraise=True); print('SYNTAX_OK')\""

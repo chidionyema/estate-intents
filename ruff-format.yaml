@@ -1,0 +1,27 @@
+name: ruff-format
+description: 'Run `ruff format` on named Python files inside one checkout or worktree,
+  the fix the idp pre-commit hook asks for. Writes: only whitespace/layout of the
+  named files in that directory. Refuses a directory that is not a git worktree. Prints
+  the diff stat.'
+args:
+  dir:
+    type: string
+    help: Checkout or worktree path
+  files:
+    type: string
+    help: Space-separated repo-relative .py paths
+halt_on_failure: true
+steps:
+- name: ruff-format
+  cmd: 'set -euf
+
+    dir={{dir}}
+
+    git -C "$dir" rev-parse --is-inside-work-tree >/dev/null || { echo "refused: $dir
+    is not a git worktree" >&2; exit 1; }
+
+    cd "$dir"
+
+    python3 -m ruff format $(printf ''%s'' {{files}})
+
+    git diff --stat -- $(printf ''%s'' {{files}})'

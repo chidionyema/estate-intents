@@ -1,0 +1,8 @@
+name: run-gates
+description: Run local CI gates
+halt_on_failure: false
+steps:
+  - name: run
+    timeout: 120
+    cmd: >
+      python3 /Users/roseonyema/.estate/scripts/run-gates.py

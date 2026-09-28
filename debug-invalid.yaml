@@ -1,0 +1,5 @@
+name: debug-invalid
+description: Debug YAML errors
+halt_on_failure: false
+steps:
+  - cmd: "cd /Users/roseonyema/Documents/code/idp && python3 -c \"\nimport yaml\nfor f in ['.github/workflows/mutation-pr-gate.yml', '.github/workflows/mutation-nightly.yml']:\n    try:\n        with open(f) as fh: yaml.safe_load(fh)\n        print(f + ': VALID')\n    except yaml.YAMLError as e:\n        print(f + ': ' + str(e)[:200])\n        import re\n        m = re.search(r'line ([0-9]+)', str(e))\n        if m:\n            lineno = int(m.group(1))\n            with open(f) as fh:\n                lines = fh.readlines()\n            for i in range(max(0,lineno-2), min(len(lines),lineno+2)):\n                print(f'  {i+1}: {repr(lines[i][:100])}')\n\""

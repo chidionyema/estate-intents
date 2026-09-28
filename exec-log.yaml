@@ -1,0 +1,5 @@
+name: exec-log
+description: Get executes-gate failure log
+halt_on_failure: false
+steps:
+  - cmd: "python3 /Users/roseonyema/.estate/intents/exec-log.py 2>&1"

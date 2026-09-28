@@ -1,0 +1,159 @@
+name: rsa-prove
+description: Produce a single proof document listing every RSA file and every test result
+class: read
+args:
+  repo: {type: string, default: "/Users/roseonyema/Documents/code/idp"}
+halt_on_failure: false
+timeout: 300
+steps:
+  - name: file-inventory
+    cmd: |
+      estate_invoke intent=pobr-gate 2>&1 | head -10
+      bash -c "      PROOF=/tmp/rsa-proof.txt
+      echo "========================================================" > "$PROOF"
+      "
+      echo "RSA PROOF — produced $(date -u +%Y-%m-%dT%H:%M:%SZ)" >> "$PROOF"
+      echo "Repo: <<repo>>" >> "$PROOF"
+      echo "========================================================" >> "$PROOF"
+      echo "" >> "$PROOF"
+
+      echo "[FILES] every RSA artifact, line count, mtime" >> "$PROOF"
+      cd <<repo>>
+      for f in \
+        platform/rsa/Cargo.toml \
+        platform/rsa/agent/Cargo.toml \
+        platform/rsa/agent/build.rs \
+        platform/rsa/agent/src/lib.rs \
+        platform/rsa/agent/src/main.rs \
+        platform/rsa/agent/src/determinism.rs \
+        platform/rsa/agent/src/wire_proxy/mod.rs \
+        platform/rsa/agent/src/trace.rs \
+        platform/rsa/agent/src/verifier_client.rs \
+        platform/rsa/agent/src/proto/mod.rs \
+        platform/rsa/agent/src/proto/verifier.rs \
+        platform/rsa/agent/src/test_helpers.rs \
+        platform/rsa/agent/tests/rsa_test.rs \
+        platform/rsa/verifier/Cargo.toml \
+        platform/rsa/verifier/src/main.rs \
+        platform/rsa/verifier/src/proto/verifier.rs \
+        platform/rsa/proto/verifier.proto \
+        platform/rsa/scripts/integrate.py \
+        platform/rsa/README.md \
+        platform/rsa/FLEET_INTEGRATION.md \
+        platform/rsa/INTEGRATION_STATUS.md \
+        platform/rsa/catalog-info.yaml \
+        platform/rsa/WHAT_THE_FOUNDER_SEES.md \
+        platform/monitoring/rsa/servicemonitor.yaml \
+        backstage/plugins/fleetview-backend/src/fleetview_backend/rsa.py \
+        backstage/plugins/fleetview-backend/src/fleetview_backend/routes.py \
+        backstage/plugins/fleetview-backend/src/fleetview_backend/serve.py \
+        backstage/plugins/fleetview-backend/tests/test_rsa_module.py \
+        backstage/plugins/fleetview-backend/tests/test_rsa_voice_path.py \
+        backstage/packages/app/src/modules/home/rsa.tsx \
+        docs/tickets/2026-09-27-rsa-regenerative-shadow-architecture.md \
+        docs/tickets/2026-09-27-rsa-bridge-to-founder-approval.md \
+        docs/tickets/2026-09-27-fleet-tickets-index.md ; do
+        if [ -f "$f" ]; then
+          LC=$(wc -l < "$f")
+          MT=$(stat -f %Sm "$f" 2>/dev/null || stat -c %y "$f" 2>/dev/null)
+          SZ=$(stat -f %z "$f" 2>/dev/null || stat -c %s "$f" 2>/dev/null)
+          printf "  %-90s %6s lines %10s bytes  %s\n" "$f" "$LC" "$SZ" "$MT" >> "$PROOF"
+        else
+          echo "  MISSING: $f" >> "$PROOF"
+        fi
+      done
+      echo "" >> "$PROOF"
+      echo "Total RSA files: $(cat <<repo>>/platform/rsa/Cargo.toml <<repo>>/backstage/plugins/fleetview-backend/src/fleetview_backend/rsa.py 2>/dev/null | wc -l) lines of code" >> "$PROOF"
+      echo "" >> "$PROOF"
+      cat "$PROOF"
+    timeout: 10
+  - name: cargo-build
+    cmd: |
+      cd <<repo>>/platform/rsa
+      cargo build --workspace 2>&1 | tail -3
+    timeout: 180
+  - name: cargo-test
+    cmd: |
+      cd <<repo>>/platform/rsa
+      cargo test --workspace 2>&1 | grep -E "test result|running" | tail -10
+    timeout: 180
+  - name: pytest-rsa
+    cmd: |
+      PROOF=/tmp/rsa-proof.txt
+      echo "" >> "$PROOF"
+      echo "[TESTS] pytest on fleetview-backend" >> "$PROOF"
+      cd <<repo>>/backstage/plugins/fleetview-backend
+      PYTHONPATH=src python3 -m pytest tests/test_rsa_module.py tests/test_rsa_voice_path.py -v --no-header --tb=no 2>&1 | tee -a "$PROOF" | tail -25
+    timeout: 60
+  - name: fixture-speak
+    cmd: |
+      PROOF=/tmp/rsa-proof.txt
+      echo "" >> "$PROOF"
+      echo "[FIXTURE] what the voice actually speaks — captured from the fast-path code" >> "$PROOF"
+      cd <<repo>>/backstage/plugins/fleetview-backend
+      PYTHONPATH=src python3 << 'PYEOF' | tee -a /tmp/rsa-proof.txt
+      """Real run of rsa_fast_path against canned Prom data — proves the spoken clause."""
+      from fleetview_backend import voice
+      canned = {"status": "success", "data": {"resultType": "vector", "result": [
+          {"metric": {"__name__": "rsa_verifications_run_total"}, "value": [1, "1042"]},
+          {"metric": {"__name__": "rsa_verifications_matched_total"}, "value": [2, "1041"]},
+          {"metric": {"__name__": "rsa_epochs_submitted_total"}, "value": [3, "96"]},
+      ]}}
+      def fake_query(promql):
+          for r in canned["data"]["result"]:
+              if r["metric"]["__name__"] in promql: return [r]
+          return []
+      from unittest.mock import patch
+      with patch("fleetview_backend.rsa._prom_query", side_effect=fake_query):
+          print("\n>>> spoken when founder says 'rsa status':")
+          body, _ = voice.rsa_fast_path("rsa status")
+          print(f"    {body['answer']}")
+          print("\n>>> spoken when founder says 'regenerability':")
+          body, _ = voice.rsa_fast_path("regenerability")
+          print(f"    {body['answer']}")
+          print("\n>>> spoken when founder says 'drift':")
+          empty = []
+          with patch("fleetview_backend.rsa._prom_query", return_value=[]):
+              body, _ = voice.rsa_fast_path("drift")
+          print(f"    {body['answer']}")
+          print("\n>>> HTTP envelope that powers the panel:")
+          with patch("fleetview_backend.rsa._prom_query", side_effect=fake_query):
+              from fleetview_backend import rsa as rsa_mod
+              env, _ = rsa_mod.status_envelope()
+              import json
+              print(json.dumps(env, indent=2))
+      PYEOF
+    timeout: 30
+  - name: integrate
+    cmd: |
+      PROOF=/tmp/rsa-proof.txt
+      echo "" >> "$PROOF"
+      echo "[INTEGRATIONS] re-running the platform-integrate intent" >> "$PROOF"
+      python3 /Users/roseonyema/Documents/code/idp/platform/rsa/scripts/integrate.py 2>&1 | tee -a "$PROOF"
+      echo "" >> "$PROOF"
+      echo "--- catalog-info.yaml:" >> "$PROOF"
+      head -10 /Users/roseonyema/Documents/code/idp/platform/rsa/catalog-info.yaml >> "$PROOF"
+      echo "" >> "$PROOF"
+      echo "--- servicemonitor.yaml:" >> "$PROOF"
+      cat /Users/roseonyema/Documents/code/idp/platform/monitoring/rsa/servicemonitor.yaml >> "$PROOF"
+      echo "" >> "$PROOF"
+      echo "--- fleetview services.json (rsa entries):" >> "$PROOF"
+      python3 -c "import json; d=json.load(open('/Users/roseonyema/Documents/code/idp/backstage/plugins/fleetview-backend/services.json')); print(json.dumps({k:v for k,v in d.items() if 'rsa' in k}, indent=2))" 2>&1 | tee -a "$PROOF"
+      echo "" >> "$PROOF"
+      echo "--- voice catalogue (rsa phrases):" >> "$PROOF"
+      grep -A 8 'RSA_PHRASES' /Users/roseonyema/Documents/code/idp/sovereign/voice/catalogue.py | tee -a "$PROOF"
+    timeout: 10
+  - name: intents
+    cmd: |
+      PROOF=/tmp/rsa-proof.txt
+      echo "" >> "$PROOF"
+      echo "[INTENTS] every RSA intent on disk" >> "$PROOF"
+      ls -la /Users/roseonyema/.estate/intents/rsa*.yaml 2>&1 | tee -a "$PROOF"
+    timeout: 5
+  - name: tickets
+    cmd: |
+      PROOF=/tmp/rsa-proof.txt
+      echo "" >> "$PROOF"
+      echo "[TICKETS] cross-linked RSA docs" >> "$PROOF"
+      ls -la /Users/roseonyema/Documents/code/idp/docs/tickets/*rsa* /Users/roseonyema/Documents/code/idp/docs/tickets/*fleet-tickets-index.md /Users/roseonyema/Documents/code/idp/docs/tickets/founder-approval-on-fleet.md 2>&1 | tee -a "$PROOF"
+    timeout: 5

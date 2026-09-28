@@ -1,0 +1,8 @@
+name: check-gate-details
+description: Get gate failure details
+halt_on_failure: false
+steps:
+  - name: run
+    timeout: 60
+    cmd: >
+      python3 /Users/roseonyema/.estate/scripts/check-gate-details.py

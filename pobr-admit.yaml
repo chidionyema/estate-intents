@@ -1,0 +1,97 @@
+name: pobr-admit
+description: >
+  Run the PoBR (Proof of Bayesian Reasoning) admission gate against a
+  reasoning trace. Checks structure, Merkle root, Ed25519 signature, anchor,
+  completeness, calibration (ECE < 0.05, Brier < 0.15), prior sensitivity sweep,
+  faithfulness, and counterfactual commitment. Returns ADMITTED or
+  REJECTED(reason, remediation).
+
+args:
+  trace_file:
+    description: >
+      Path to the JSON reasoning trace file (PoBR schema).
+      If not provided, reads from stdin as JSON.
+    required: false
+  thresholds_ece:
+    description: ECE threshold (default 0.05).
+    required: false
+    default: "0.05"
+  thresholds_brier:
+    description: Brier score threshold (default 0.15).
+    required: false
+    default: "0.15"
+  thresholds_posterior_var:
+    description: Posterior variance threshold (default 0.01).
+    required: false
+    default: "0.01"
+  thresholds_rank_stable:
+    description: Rank stability required across prior sweep (default true).
+    required: false
+    default: "true"
+  skip_anchor:
+    description: Skip the Aevum PACR anchor check (default false).
+    required: false
+    default: "false"
+  skip_signature:
+    description: Skip Ed25519 signature verification (default false).
+    required: false
+    default: "false"
+  agent_key:
+    description: >
+      Agent Ed25519 private key (base64 or PEM). Overrides AGENT_KEY_PATH env.
+    required: false
+
+env:
+  AGENT_KEY_PATH:
+    description: Path to agent Ed25519 private key PEM (default ~/.estate/keys/agent.pem).
+    required: false
+  ANCHOR_AEVUM_URL:
+    description: Aevum PACR anchor service URL.
+    required: false
+
+libexec: |
+  import sys, json, os
+  from pathlib import Path
+
+  # Resolve paths
+  worktree_root = Path("/Users/roseonyema/Documents/code/worktrees/pobr")
+  sys.path.insert(0, str(worktree_root))
+
+  # CLI args
+  args = {}
+  for i, arg in enumerate(sys.argv[1:]):
+    if arg.startswith("--"):
+      key, _, val = arg.lstrip("-").partition("=")
+      if not val and i + 1 < len(sys.argv[1:]):
+        val = sys.argv[2 + i]
+      args[key.replace("-", "_")] = val
+
+  trace_file = args.get("trace_file")
+  thresholds = {
+      "ece": float(args.get("thresholds_ece", "0.05")),
+      "brier": float(args.get("thresholds_brier", "0.15")),
+      "posterior_var": float(args.get("thresholds_posterior_var", "0.01")),
+      "rank_stable": args.get("thresholds_rank_stable", "true").lower() == "true",
+  }
+  skip_anchor = args.get("skip_anchor", "false").lower() == "true"
+  skip_signature = args.get("skip_signature", "false").lower() == "true"
+  agent_key_arg = args.get("agent_key")
+
+  # Load trace
+  if trace_file:
+      with open(trace_file) as f:
+          trace = json.load(f)
+  else:
+      trace = json.load(sys.stdin)
+
+  from pobr_gate import PoBRGate, PobRResult
+
+  gate = PoBRGate(
+      thresholds=thresholds,
+      skip_anchor=skip_anchor,
+      skip_signature=skip_signature,
+      agent_key=agent_key_arg,
+  )
+
+  result = gate.evaluate(trace)
+  print(json.dumps(result.to_dict(), indent=2))

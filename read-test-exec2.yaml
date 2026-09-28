@@ -1,0 +1,5 @@
+name: read-test-exec2
+description: Read rest of bin/test-executes-gate
+halt_on_failure: false
+steps:
+  - cmd: "cd /Users/roseonyema/Documents/code/idp && cat bin/test-executes-gate 2>/dev/null | tail -80"

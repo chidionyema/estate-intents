@@ -1,0 +1,5 @@
+name: check-origin
+description: Check if test file commit is on origin
+halt_on_failure: false
+steps:
+  - cmd: "cd /Users/roseonyema/Documents/code/idp && git fetch origin feat/pobr && git log --oneline origin/feat/pobr | grep -E '2ba44|opus|claude' | head -5 && echo '---' && git log --oneline HEAD | grep -E '2ba44|opus|claude' | head -5"

@@ -1,0 +1,5 @@
+name: check-repos
+description: Check estate-intents repo
+halt_on_failure: false
+steps:
+  - cmd: "gh repo view chidionyema/estate-intents 2>/dev/null && echo EXISTS || echo NOT FOUND"

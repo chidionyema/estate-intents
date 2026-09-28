@@ -1,0 +1,5 @@
+name: seed-repo
+description: Seed estate-intents and replace with checkout
+halt_on_failure: false
+steps:
+  - cmd: "cd ~/.estate && mkdir -p /tmp/estate-intents-seed && cd /tmp/estate-intents-seed && git init && git remote add origin git@github.com:chidionyema/estate-intents.git && cp -r ~/.estate/intents.bak/* . 2>/dev/null || cp -r ~/.estate/intents/* . 2>/dev/null; git add -A && git commit -m \"Initial seed of estate intents\" && git push -u origin main && echo DONE && ls"

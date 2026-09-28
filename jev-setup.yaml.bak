@@ -1,0 +1,88 @@
+name: jev-setup
+description: >
+  Wire Jev (decision layer) into estate-mcp. Check if AI_GATEWAY_API_KEY is in
+  the vault, what env var Jev expects, and what files to edit.
+steps:
+  - name: check-jev-env
+    cmd: >
+      python3 -c "
+import os
+# Jev plugin reads TYPESAFE_API_KEY (mcp/plugins/jev.py)
+print('Jev expects: TYPESAFE_API_KEY')
+print('Found in vault as: AI_GATEWAY_API_KEY (Bitwarden -> OCI Vault -> SOPS)')
+print()
+# Check if we can read from OCI
+import subprocess
+r = subprocess.run(
+    ['/Users/roseonyema/Documents/code/idp/bin/idp-cloud', 'secret', 'describe', 'AI_GATEWAY_API_KEY'],
+    capture_output=True, text=True,
+    env={**os.environ, 'IDP_CLOUD_BACKEND': 'oci', 'SUPPRESS_LABEL_WARNING': 'True'}
+)
+print('OCI Vault check:', 'PRESENT' if r.returncode == 0 else 'MISSING')
+print(r.stdout[:200])
+print(r.stderr[:200])
+"
+
+  - name: check-sops-vault
+    cmd: >
+      python3 -c "
+import subprocess, os
+# Check SOPS vault
+sops = '/Users/roseonyema/Library/Python/3.9/bin/sops'
+key = os.path.expanduser('~/.config/prospector/age-key.txt')
+if not os.path.exists(key):
+    print('SOPS age key MISSING at ~/.config/prospector/age-key.txt')
+    print('Run: age-keygen -o ~/.config/prospector/age-key.txt')
+else:
+    print(f'SOPS age key present at {key}')
+print()
+# Check estate-secrets
+es = '/Users/roseonyema/Documents/code/estate-secrets'
+if os.path.exists(es):
+    r = subprocess.run(['git', '-C', es, 'ls-files', 'secrets/dev/'],
+                      capture_output=True, text=True)
+    files = [f.strip() for f in r.stdout.split() if 'AI_GATEWAY' in f or 'gateway' in f.lower()]
+    print(f'SOPS vault AI_GATEWAY_API_KEY: {\"PRESENT\" if files else \"MISSING\"}')
+    for f in files: print(f'  {f}')
+else:
+    print('estate-secrets not cloned')
+"
+
+  - name: jev-mcp-plugin
+    cmd: >
+      grep -n "TYPESAFE_API_KEY\|JEV_MODEL\|JEV_DEFAULT\|JEV_TIMEOUT" \
+        /Users/roseonyema/Documents/code/idp/mcp/plugins/jev.py 2>/dev/null | head -10
+
+  - name: estate-mcp-yaml
+    cmd: >
+      grep -n "TYPESAFE_API_KEY\|AI_GATEWAY\|gateway" \
+        /Users/roseonyema/Documents/code/idp/platform/mcp/estate-mcp.yaml 2>/dev/null | head -5
+
+  - name: summary
+    cmd: >
+      python3 -c "
+print('=== Jev wiring: AI_GATEWAY_API_KEY -> TYPESAFE_API_KEY ===')
+print()
+print('Step 1: AI_GATEWAY_API_KEY lands in vault')
+print('  Bitwarden Secrets Manager -> OCI Vault')
+print('  Then: vault-seed pushes to estate-secrets SOPS vault')
+print('  File: secrets/dev/AI_GATEWAY_API_KEY.yaml')
+print()
+print('Step 2: Read on laptop')
+print('  source ~/Documents/code/estate-secrets/scripts/secret-load')
+print('  secret-load dev laptop AI_GATEWAY_API_KEY')
+print()
+print('Step 3: Wire into estate-mcp (platform/mcp/estate-mcp.yaml)')
+print('  env:')
+print('    - name: TYPESAFE_API_KEY')
+print('      valueFrom:')
+print('        secretKeyRef:')
+print('          name: ai-gateway')
+print('          key: AI_GATEWAY_API_KEY')
+print()
+print('Step 4: Create Kubernetes Secret in mcp namespace (ESO reads from estate-vault)')
+print('  ExternalSecret in platform/mcp/ referencing estate-vault key AI_GATEWAY_API_KEY')
+print()
+print('Step 5: Roll estate-mcp pods to pick up the secret')
+print('  kubectl rollout restart deployment/estate-mcp -n mcp')
+"

@@ -1,0 +1,6 @@
+name: fix-executor-pr
+description: Push executor restoration to a new branch and open PR
+steps:
+  - name: push-branch
+    cmd: >
+      cd /Users/roseonyema/Documents/code/idp && git push origin main:restore-executor -f 2>&1

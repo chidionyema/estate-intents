@@ -1,0 +1,5 @@
+name: run-fix
+description: Validate and fix workflows
+halt_on_failure: false
+steps:
+  - cmd: "python3 /Users/roseonyema/.estate/libexec/fix-workflows.py"

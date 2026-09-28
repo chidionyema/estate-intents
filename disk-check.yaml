@@ -1,0 +1,7 @@
+name: disk-check
+description: Check disk space
+halt_on_failure: false
+steps:
+  - name: run
+    cmd: >
+      python3 -c "import subprocess; r=subprocess.run(['df','-h'],capture_output=True,text=True); print(r.stdout)"

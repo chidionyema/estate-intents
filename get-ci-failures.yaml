@@ -1,0 +1,8 @@
+name: get-ci-failures
+description: Get CI failure details for PR 4731
+halt_on_failure: false
+steps:
+  - name: run
+    timeout: 120
+    cmd: >
+      python3 /Users/roseonyema/.estate/scripts/get-ci-failures.py

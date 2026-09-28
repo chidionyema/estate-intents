@@ -1,0 +1,8 @@
+name: format-and-commit
+description: Format files and push
+halt_on_failure: false
+steps:
+  - name: run
+    timeout: 300
+    cmd: >
+      python3 /Users/roseonyema/.estate/scripts/format-and-commit.py

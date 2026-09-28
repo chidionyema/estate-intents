@@ -1,0 +1,5 @@
+name: shadow-error
+description: Get shadow-verify error
+halt_on_failure: false
+steps:
+  - cmd: "python3 /Users/roseonyema/.estate/intents/shadow-error.py 2>&1 | head -60"

@@ -1,0 +1,5 @@
+name: check-pr-yaml
+description: Validate both workflows
+halt_on_failure: false
+steps:
+  - cmd: "cd /Users/roseonyema/Documents/code/idp && git show origin/main:.github/workflows/mutation-pr-gate.yml > /tmp/pr-gate.yml && python3 -c \"\nimport yaml\nfor name, path in [('nightly', '/tmp/nightly.yml'), ('pr-gate', '/tmp/pr-gate.yml')]:\n    try:\n        with open(path) as f:\n            yaml.safe_load(f)\n        print(f'{name}: VALID YAML')\n    except Exception as e:\n        print(f'{name}: INVALID - {e}')\n\""

@@ -1,0 +1,5 @@
+name: search-opus
+description: Search for opus model reference
+halt_on_failure: false
+steps:
+  - cmd: "cd /Users/roseonyema/Documents/code/idp && rg -l 'opus.*4\\.6\\|claude-opus-4-6\\|claude-opus-4\\\\.6' . 2>/dev/null | head -10"

@@ -1,0 +1,55 @@
+name: rsa-workflow-proof
+description: Restart fleetview with the fix and prove RSA path works
+class: read
+args: {}
+halt_on_failure: false
+timeout: 60
+steps:
+  - name: restart
+    cmd: |
+      estate_invoke intent=pobr-gate 2>&1 | head -10
+      bash -c "      PID=$(lsof -t -iTCP:4008 -sTCP:LISTEN 2>/dev/null)
+      if [ -n "$PID" ]; then kill -9 "$PID" 2>/dev/null; sleep 2; fi
+      "
+      find /Users/roseonyema/Documents/code/idp -name __pycache__ -prune -exec rm -rf {} + 2>/dev/null
+      PROM_URL=http://127.0.0.1:9090 nohup python3 /tmp/serve_rsa.py > /tmp/fleetview-new.log 2>&1 &
+      sleep 4
+      head -10 /tmp/fleetview-new.log
+      echo --
+      curl -s http://127.0.0.1:4008/rsa/status | head -c 200; echo
+    timeout: 15
+  - name: prove
+    cmd: |
+      PROOF=/tmp/end-to-end-proven.txt
+      : > "$PROOF"
+      echo "================================================================" >> "$PROOF"
+      echo "RSA LIVE END-TO-END PROOF — $(date -u +%Y-%m-%dT%H:%M:%SZ)" >> "$PROOF"
+      echo "fleetview on :4008 with fixed RSA fast-path" >> "$PROOF"
+      echo "================================================================" >> "$PROOF"
+      echo "" >> "$PROOF"
+
+      echo "== /rsa/status ==" >> "$PROOF"
+      curl -s -w "\n[HTTP %{http_code}]\n" http://127.0.0.1:4008/rsa/status >> "$PROOF"
+
+      echo "" >> "$PROOF"
+      echo "== POST /voice/stream q='rsa status' ==" >> "$PROOF"
+      curl -s -X POST http://127.0.0.1:4008/voice/stream -H 'Content-Type: application/json' -d '{"question": "rsa status", "history": []}' >> "$PROOF"
+
+      echo "" >> "$PROOF"
+      echo "== POST /voice/stream q='drift' ==" >> "$PROOF"
+      curl -s -X POST http://127.0.0.1:4008/voice/stream -H 'Content-Type: application/json' -d '{"question": "drift", "history": []}' >> "$PROOF"
+
+      echo "" >> "$PROOF"
+      echo "== POST /voice/stream q='regenerability' ==" >> "$PROOF"
+      curl -s -X POST http://127.0.0.1:4008/voice/stream -H 'Content-Type: application/json' -d '{"question": "regenerability", "history": []}' >> "$PROOF"
+
+      echo "" >> "$PROOF"
+      echo "== POST /voice/stream q='rsa drift check' ==" >> "$PROOF"
+      curl -s -X POST http://127.0.0.1:4008/voice/stream -H 'Content-Type: application/json' -d '{"question": "rsa drift check", "history": []}' >> "$PROOF"
+
+      echo "" >> "$PROOF"
+      echo "== CONTROL: 'how many agents' (should NOT take fast path, expects LLM error) ==" >> "$PROOF"
+      curl -s -X POST http://127.0.0.1:4008/voice/stream -H 'Content-Type: application/json' -d '{"question": "how many agents are working?", "history": []}' >> "$PROOF"
+
+      cat "$PROOF"
+    timeout: 30

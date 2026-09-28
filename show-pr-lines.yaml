@@ -1,0 +1,5 @@
+name: show-pr-lines
+description: Check PR gate around line 71
+halt_on_failure: false
+steps:
+  - cmd: "cd /Users/roseonyema/Documents/code/idp && python3 -c \"\nwith open('/tmp/pr-gate.yml') as f:\n    lines = f.readlines()\nfor i in range(65, 80):\n    print(f'{i+1}: {repr(lines[i][:100])}')\n\""

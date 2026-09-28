@@ -1,0 +1,5 @@
+name: check-workflows
+description: Check what changed in workflows
+halt_on_failure: false
+steps:
+  - cmd: "cd /Users/roseonyema/Documents/code/idp && git diff origin/main --name-only -- .github/workflows/fast-gate.yml .github/workflows/executes-gate.yml .github/workflows/shadow-verify.yml 2>/dev/null | head -20 && echo '---' && git log origin/main..HEAD --oneline -- .github/workflows/ | head -10"

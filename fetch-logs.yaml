@@ -1,0 +1,5 @@
+name: fetch-logs
+description: Get failure logs
+halt_on_failure: false
+steps:
+  - cmd: "python3 /Users/roseonyema/.estate/intents/fetch-logs.py 2>&1 | head -80"

@@ -1,0 +1,26 @@
+name: pr-merge
+description: >
+  Merge a PR. Defaults to squash-merge. --dry-run prints the outcome
+  without merging. --state=open shows PR status first.
+args:
+  pr:      {type: int,    default: 0}
+  method:  {type: string, default: "squash", description: "squash|merge|rebase"}
+  dry_run: {type: bool,   default: false}
+  repo:    {type: string, default: "chidioniema/idp"}
+steps:
+  - name: show
+    cmd: >
+      gh pr view {{pr}} --repo {{repo}} --json number,title,state,isDraft,additions,deletions,changedFiles 2>/dev/null |
+      python3 -c "
+import json,sys
+d=json.load(sys.stdin)
+print(f'PR #{d[\"number\"]}: {d[\"title\"]}')
+print(f'State: {d[\"state\"]} | Draft: {d[\"isDraft\"]} | +{d[\"additions\"]}/-{d[\"deletions\"]} | {d[\"changedFiles\"]} files')
+"
+  - name: merge
+    cmd: >
+      if [ "{{dry_run}}" = "False" ]; then
+        echo "DRY RUN -- add --dry_run=false to actually merge"
+      fi
+      gh pr merge {{pr}} --repo {{repo}} --{{method}} --{{if(dry_run,'admin,no-ff','admin')}} 2>&1 |
+      head -5

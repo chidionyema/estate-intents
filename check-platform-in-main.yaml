@@ -1,0 +1,8 @@
+name: check-platform-in-main
+description: Check if platform/rsa in main
+halt_on_failure: false
+steps:
+  - name: run
+    timeout: 60
+    cmd: >
+      python3 /Users/roseonyema/.estate/scripts/check-platform-in-main.py

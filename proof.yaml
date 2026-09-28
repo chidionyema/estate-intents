@@ -1,0 +1,5 @@
+name: proof
+description: Prove mutation system is running
+halt_on_failure: false
+steps:
+  - cmd: "echo '=== NIGHTLY ===' && cd /Users/roseonyema/Documents/code/idp && gh run list --workflow mutation-nightly.yml -L 3 --json status,conclusion,createdAt 2>/dev/null && echo '=== PR GATE ===' && gh run list --workflow mutation-pr-gate.yml -L 3 --json status,conclusion,createdAt 2>/dev/null && echo '=== SAVE DAEMON ===' && pgrep -fl mutation-save && echo '=== PRE-COMMIT HOOK ===' && [ -x /Users/roseonyema/Documents/code/idp/.git/hooks/pre-commit ] && echo executable || echo missing"

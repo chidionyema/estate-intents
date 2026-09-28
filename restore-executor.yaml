@@ -1,0 +1,6 @@
+name: restore-executor
+description: Restore estate_executor.py from git history and commit it.
+steps:
+  - name: run
+    cmd: >
+      python3 /tmp/restore-executor.py

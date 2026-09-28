@@ -1,0 +1,5 @@
+name: create-repo
+description: Create estate-intents repo
+halt_on_failure: false
+steps:
+  - cmd: "cd ~/.estate && gh repo create estate-intents --public --description \"Governed intent library for the estate agent system. Agent proposes via PR, human reviews and merges.\" 2>&1"

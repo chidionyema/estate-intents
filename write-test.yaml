@@ -1,0 +1,5 @@
+name: write-test
+description: Write fixed test file
+halt_on_failure: false
+steps:
+  - cmd: "python3 /Users/roseonyema/.estate/intents/write-test.py && wc -l /Users/roseonyema/Documents/code/idp/tests/test_local_claude_max_lane.py"

@@ -1,0 +1,8 @@
+name: check-fast-gate
+description: Check fast gate failures
+halt_on_failure: false
+steps:
+  - name: run
+    timeout: 120
+    cmd: >
+      python3 /Users/roseonyema/.estate/scripts/check-fast-gate.py

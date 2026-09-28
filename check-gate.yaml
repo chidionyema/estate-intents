@@ -1,0 +1,5 @@
+name: check-gate
+description: Check mutation-pr-gate workflow runs
+halt_on_failure: false
+steps:
+  - cmd: "cd /Users/roseonyema/Documents/code/idp && gh run list --workflow mutation-pr-gate.yml --branch feat/pobr -L 3 --json status,conclusion,name,createdAt,headBranch"

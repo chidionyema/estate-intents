@@ -1,0 +1,7 @@
+name: check-pr-4731
+description: Check PR 4731 CI in detail
+halt_on_failure: false
+steps:
+  - name: run
+    cmd: >
+      python3 /Users/roseonyema/.estate/scripts/check-pr-4731.py

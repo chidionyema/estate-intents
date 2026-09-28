@@ -1,0 +1,67 @@
+name: rsa-cleanup
+description: Delete ad-hoc files from today's rsa work
+class: mutate
+args:
+  apply:
+    type: bool
+    default: false
+  repo:
+    type: string
+    default: /Users/roseonyema/Documents/code/idp
+halt_on_failure: false
+timeout: 30
+steps:
+  - name: list
+    cmd: |
+      estate_invoke intent=pobr-gate 2>&1 | head -10
+      bash -c "      echo "=== files to delete ==="
+      ls /Users/roseonyema/Documents/code/idp/platform/rsa/FLEET_PAGE_PROOF.md /Users/roseonyema/Documents/code/idp/platform/rsa/INTEGRATION_STATUS.md /Users/roseonyema/Documents/code/idp/platform/rsa/WHAT_THE_FOUNDER_SEES.md /Users/roseonyema/Documents/code/idp/platform/rsa/BUYER_DEMO.md /Users/roseonyema/Documents/code/idp/platform/rsa/VOICE_VISUAL_WIRING.md /Users/roseonyema/Documents/code/idp/platform/rsa/ANSWER.md /Users/roseonyema/Documents/code/idp/platform/rsa/PROOF.txt /Users/roseonyema/Documents/code/idp/platform/rsa/PROOF.md /Users/roseonyema/Documents/code/idp/platform/rsa/FLEET_INTEGRATION.md /Users/roseonyema/Documents/code/idp/platform/rsa/WHA_IS_LIVE.md /Users/roseonyema/Documents/code/idp/platform/rsa/scripts/render_panel.py 2>&1
+      "
+      echo "---"
+      echo "=== kept: Rust tests, agent Cargo.toml, scripts/integrate.py ==="
+      ls /Users/roseonyema/Documents/code/idp/platform/rsa/agent/tests/rsa_test.rs /Users/roseonyema/Documents/code/idp/platform/rsa/agent/Cargo.toml /Users/roseonyema/Documents/code/idp/platform/rsa/scripts/integrate.py 2>&1
+    timeout: 10
+  - name: clean-md-cruft
+    cmd: |
+      cd /Users/roseonyema/Documents/code/idp
+      rm -f platform/rsa/FLEET_PAGE_PROOF.md
+      rm -f platform/rsa/INTEGRATION_STATUS.md
+      rm -f platform/rsa/WHAT_THE_FOUNDER_SEES.md
+      rm -f platform/rsa/BUYER_DEMO.md
+      rm -f platform/rsa/VOICE_VISUAL_WIRING.md
+      rm -f platform/rsa/ANSWER.md
+      rm -f platform/rsa/PROOF.txt
+      rm -f platform/rsa/PROOF.md
+      rm -f platform/rsa/FLEET_INTEGRATION.md
+      rm -f platform/rsa/WHA_IS_LIVE.md
+      echo "deleted 9 markdown/text docs"
+      ls /Users/roseonyema/Documents/code/idp/platform/rsa/ 2>&1 | head -10
+    timeout: 10
+  - name: clean-render-panel-script
+    cmd: |
+      rm -f /Users/roseonyema/Documents/code/idp/platform/rsa/scripts/render_panel.py
+      echo "deleted scripts/render_panel.py"
+      ls /Users/roseonyema/Documents/code/idp/platform/rsa/scripts/ 2>&1
+    timeout: 5
+  - name: invariants
+    cmd: |
+      echo "=== final state ==="
+      echo
+      echo "kept (platform/rsa):"
+      find /Users/roseonyema/Documents/code/idp/platform/rsa -type f 2>&1 | sort
+      echo
+      echo "fleetview-backend changes still in place (NOT touched in this cleanup):"
+      ls /Users/roseonyema/Documents/code/idp/backstage/plugins/fleetview-backend/src/fleetview_backend/rsa.py
+      ls /Users/roseonyema/Documents/code/idp/backstage/plugins/fleetview-backend/tests/test_rsa_module.py
+      ls /Users/roseonyema/Documents/code/idp/backstage/plugins/fleetview-backend/tests/test_rsa_voice_path.py
+      ls /Users/roseonyema/Documents/code/idp/backstage/packages/app/src/modules/home/rsa.tsx
+      echo
+      echo "voice catalogue entry:"
+      grep RSA_PHRASES /Users/roseonyema/Documents/code/idp/sovereign/voice/catalogue.py | head -3
+      echo
+      echo "rust workspace still builds:"
+      cd /Users/roseonyema/Documents/code/idp/platform/rsa && cargo build --workspace 2>&1 | tail -3
+      echo
+      echo "rust tests still pass:"
+      cargo test --workspace 2>&1 | tail -3
+    timeout: 60

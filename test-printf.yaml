@@ -1,0 +1,5 @@
+name: test-printf
+description: Test printf approach in YAML
+halt_on_failure: false
+steps:
+  - cmd: "python3 -c \"\nimport yaml, tempfile, os\n\n# Test: printf approach\nwf = '''\njobs:\n  test:\n    runs-on: ubuntu-latest\n    steps:\n      - name: write file\n        run: |\n          printf '%s\n' 'import json' 'print(1)' > /tmp/script.py\n      - name: run it\n        run: python3 /tmp/script.py\n'''\n\ntry:\n    yaml.safe_load(wf)\n    print('VALID YAML')\nexcept yaml.YAMLError as e:\n    print(f'INVALID: {e}')\n\""

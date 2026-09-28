@@ -1,0 +1,7 @@
+name: untracked-list
+description: List untracked files
+halt_on_failure: false
+steps:
+  - name: run
+    cmd: >
+      python3 /Users/roseonyema/.estate/scripts/untracked-list.py

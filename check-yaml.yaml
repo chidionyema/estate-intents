@@ -1,0 +1,5 @@
+name: check-yaml
+description: Validate workflow YAML
+halt_on_failure: false
+steps:
+  - cmd: "cd /Users/roseonyema/Documents/code/idp && git show origin/main:.github/workflows/mutation-nightly.yml | python3 -c \"import yaml, sys; yaml.safe_load(sys.stdin); print('valid YAML')\" && echo '---' && git show origin/main:.github/workflows/mutation-pr-gate.yml | python3 -c \"import yaml, sys; yaml.safe_load(sys.stdin); print('valid YAML')\""

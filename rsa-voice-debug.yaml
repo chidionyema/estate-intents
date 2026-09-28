@@ -1,0 +1,13 @@
+name: rsa-voice-debug
+description: Inspect /voice/turns endpoint source
+class: read
+args: {}
+halt_on_failure: false
+timeout: 30
+steps:
+  - name: check
+    cmd: |
+      estate_invoke intent=pobr-gate 2>&1 | head -10
+      bash -c "      python3 /tmp/check_turns_endpoint.py
+    timeout: 15
+      "

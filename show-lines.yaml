@@ -1,0 +1,5 @@
+name: show-lines
+description: Read full mutation-nightly around failure
+halt_on_failure: false
+steps:
+  - cmd: "cd /Users/roseonyema/Documents/code/idp && git show origin/main:.github/workflows/mutation-nightly.yml | cat -n | sed -n '78,100p'"

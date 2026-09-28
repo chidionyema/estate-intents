@@ -1,0 +1,47 @@
+name: pobr-gate
+description: "PoBR gate: refuse if priors/definition empty or rank diverges. Args: task, definition, priors."
+class: mutate
+args:
+  task:
+    type: string
+    description: "What you want to measure"
+  definition:
+    type: string
+    description: "Exact counting rule. Empty = REFUSED."
+  priors:
+    type: string
+    description: "JSON array of competing hypotheses. Empty = REFUSED."
+halt_on_failure: true
+timeout: 15
+steps:
+  - name: check
+    cmd: |
+      if [ -z "$definition" ] || [ "$definition" = "null" ] || [ "$definition" = "undefined" ]; then
+        echo "REFUSED: definition is empty. State the counting rule first."
+        exit 1
+      fi
+      if [ -z "$priors" ] || [ "$priors" = "null" ] || [ "$priors" = "[]" ]; then
+        echo "REFUSED: priors are empty. Declare competing hypotheses first."
+        exit 1
+      fi
+      PRIOR_HASH=$(printf '%s' "$task|$definition" | shasum -a 256 | awk '{print $1}')
+      CACHE=/tmp/pobr-cache.json
+      NEW_HASH=$(printf '%s' "$task|$definition|$priors" | shasum -a 256 | awk '{print $1}')
+      if [ -f "$CACHE" ]; then
+        PREV=$(python3 -c "import json; d=json.load(open('$CACHE')); print(d.get('$PRIOR_HASH',''))")
+        if [ -n "$PREV" ] && [ "$PREV" != "$NEW_HASH" ]; then
+          echo "REFUSED: rank divergence."
+          exit 2
+        fi
+      fi
+      python3 -c "
+import json, os
+p = '$CACHE'
+d = {}
+if os.path.exists(p):
+    d = json.load(open(p))
+d['$PRIOR_HASH'] = '$NEW_HASH'
+json.dump(d, open(p,'w'))
+"
+      echo "DECLARED."
+    timeout: 10

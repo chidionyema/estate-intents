@@ -1,0 +1,5 @@
+name: check-failures
+description: Check failing CI jobs
+halt_on_failure: false
+steps:
+  - cmd: "cd /Users/roseonyema/Documents/code/idp && gh run view 36397926045 --json jobs --jq '.jobs[] | select(.conclusion==\"failure\") | \"\\(.name) \\(.conclusion) \\(.id)\"'"

@@ -1,0 +1,43 @@
+name: rsa-status
+description: >
+  Live RSA observability — proves the system is regenerable RIGHT NOW, not
+  just at test time. Reports entropy captured, overlays active, epoch state,
+  recent verifications, and last successful epoch receipt.
+class: read
+args: {}
+halt_on_failure: false
+timeout: 30
+steps:
+  - name: rsa-runtime-state
+    cmd: |
+      estate_invoke intent=pobr-gate 2>&1 | head -10
+      bash -c "      cd <<repo>>/platform/rsa
+      # Read the live state files written by the agent every second
+      "
+      echo "=== RSA LIVE STATUS ==="
+      echo
+      cat agent/state/observability.json 2>/dev/null | python3 -m json.tool 2>/dev/null || echo "no live state yet"
+      echo
+      cat agent/state/last_epoch.json 2>/dev/null | python3 -m json.tool 2>/dev/null || echo "no epoch completed yet"
+    timeout: 5
+  - name: rsa-epoch-recent
+    cmd: |
+      cd <<repo>>/platform/rsa
+      echo "=== LAST 5 EPOCHS ==="
+      tail -5 agent/state/epoch_history.jsonl 2>/dev/null || echo "no history"
+    timeout: 5
+  - name: rsa-process-checks
+    cmd: |
+      echo "=== AGENT PROCESSES ==="
+      ps aux | grep -E "rsa-agent|rsa-verifier" | grep -v grep | head -5 || echo "no agents running"
+      echo
+      echo "=== WIRE PROXY SOCKETS ==="
+      lsof -iTCP -sTCP:LISTEN -P 2>/dev/null | grep -E "rsa|5432" | head -3 || echo "no wire proxy listening"
+    timeout: 5
+  - name: rsa-bench
+    cmd: |
+      cd <<repo>>/platform/rsa
+      echo "=== 60-SECOND DIFFERENTIAL PROOF ==="
+      # Run 60 individual differential checks as a live proof
+      cargo test --package rsa-agent --test rsa_test --release -- --nocapture --test-threads=1 2>&1 | tail -20
+    timeout: 90

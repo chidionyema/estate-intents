@@ -1,0 +1,8 @@
+name: run-ruff-local
+description: Run ruff with E9,F,B,S rules
+halt_on_failure: false
+steps:
+  - name: run
+    timeout: 120
+    cmd: >
+      python3 /Users/roseonyema/.estate/scripts/run-ruff-local.py

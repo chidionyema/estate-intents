@@ -1,0 +1,152 @@
+name: rsa-voice-layer-cleanup
+description: >
+  Delete the ad-hoc voice-layer plumbing added during today's RSA work. The voice fast-path
+  duplicated the existing voice-router (which already has /voice/turns and records turns via
+  turnlog.record), and the inline _RSA_PHRASES_FALLBACK duplicated the canonical catalogue entry.
+  After this intent:
+    * voice.py is restored to its pre-session shape (no rsa_fast_path, no _RSA_PHRASES_FALLBACK,
+      no _record_voice_turn)
+    * serve.py no longer mounts the duplicate /voice/turns route
+    * platform/rsa/WHAT_IS_LIVE.md and VOICE_RESPONSE_VISION.md are gone (ad-hoc narrative docs)
+    * fleetview-backend tests pass
+  No cargo. No yarn. No editor. Each step is bounded under 30s.
+class: mutate
+args:
+  apply:
+    type: bool
+    default: false
+  repo:
+    type: string
+    default: /Users/roseonyema/Documents/code/idp
+halt_on_failure: true
+timeout: 30
+steps:
+  - name: preflight
+    cmd: |
+      estate_invoke intent=pobr-gate 2>&1 | head -10
+      bash -c "      cd /Users/roseonyema/Documents/code/idp
+      echo "=== files we are about to edit ==="
+      "
+      ls -l \
+        backstage/plugins/fleetview-backend/src/fleetview_backend/voice.py \
+        backstage/plugins/fleetview-backend/src/fleetview_backend/serve.py \
+        platform/rsa/WHAT_IS_LIVE.md \
+        platform/rsa/VOICE_RESPONSE_VISION.md || true
+      echo
+      echo "=== git status (just before) ==="
+      git status --short 2>&1 | head -30 || true
+      echo "(preflight done)"
+    timeout: 10
+  - name: clean-voice-py
+    cmd: |
+      F=/Users/roseonyema/Documents/code/idp/backstage/plugins/fleetview-backend/src/fleetview_backend/voice.py
+      python3 - <<'PY'
+      import re, sys
+      from pathlib import Path
+      f = Path("/Users/roseonyema/Documents/code/idp/backstage/plugins/fleetview-backend/src/fleetview_backend/voice.py")
+      src = f.read_text()
+
+      # 1. Remove the entire RSA-fallback dict block (from "# CP7 RSA fast-path" header through
+      #    the trailing `_RSA_PHRASES = _RSA_PHRASES_FALLBACK` line, exclusive of the blank line
+      #    before _resolve_rsa_phrase).
+      pattern_block = re.compile(
+          r"# CP7 RSA fast-path:.*?_RSA_PHRASES = _RSA_PHRASES_FALLBACK\n",
+          re.DOTALL,
+      )
+      new_src, n_block = pattern_block.subn("", src)
+      if n_block != 1:
+          print(f"FAIL: expected 1 RSA-fallback block removal, got {n_block}", file=sys.stderr)
+          sys.exit(1)
+
+      # 2. Remove the helpers _resolve_rsa_phrase and rsa_fast_path.
+      pattern_helpers = re.compile(
+          r"\ndef _resolve_rsa_phrase\(.*?(?=\ndef _is_spatial_intent)",
+          re.DOTALL,
+      )
+      new_src, n_helpers = pattern_helpers.subn("\n", new_src)
+      if n_helpers != 1:
+          print(f"FAIL: expected 1 helper removal, got {n_helpers}", file=sys.stderr)
+          sys.exit(1)
+
+      # 3. Remove the CP7 intercept in ask() — the rsa = ...; if rsa is not None: ... block.
+      pattern_ask = re.compile(
+          r"    # CP7 RSA phrase intent.*?_record_voice_turn\(question=question, body=rsa\[0\], status=rsa\[1\], rule=\"rsa-fast-path\"\)\n        return rsa\n\n",
+          re.DOTALL,
+      )
+      new_src, n_ask = pattern_ask.subn("", new_src)
+      if n_ask != 1:
+          print(f"FAIL: expected 1 ask() intercept removal, got {n_ask}", file=sys.stderr)
+          sys.exit(1)
+
+      # 4. Remove the CP7 intercept in stream_ask() — same shape.
+      pattern_stream = re.compile(
+          r"    # CP7 RSA phrase fast-path.*?_record_voice_turn\(question=question, body=body, status=status, rule=\"rsa-fast-path\"\)\n        yield _sse\(\"done\", \{\"status\": status\}\)\n        return\n\n",
+          re.DOTALL,
+      )
+      new_src, n_stream = pattern_stream.subn("", new_src)
+      if n_stream != 1:
+          print(f"FAIL: expected 1 stream_ask() intercept removal, got {n_stream}", file=sys.stderr)
+          sys.exit(1)
+
+      # 5. Remove _record_voice_turn entirely (definition at end of file).
+      pattern_rec = re.compile(
+          r"\ndef _record_voice_turn\(question: str, body: dict, status: int, rule: str\) -> None:.*?(?=\Z)",
+          re.DOTALL,
+      )
+      new_src, n_rec = pattern_rec.subn("", new_src)
+      if n_rec != 1:
+          print(f"FAIL: expected 1 _record_voice_turn removal, got {n_rec}", file=sys.stderr)
+          sys.exit(1)
+
+      f.write_text(new_src)
+      print(f"OK voice.py: removed block={n_block} helpers={n_helpers} ask={n_ask} stream={n_stream} recorder={n_rec}")
+      print(f"OK voice.py: {len(src)} -> {len(new_src)} bytes")
+      PY
+    timeout: 10
+  - name: clean-serve-py
+    cmd: |
+      python3 - <<'PY'
+      import re, sys
+      from pathlib import Path
+      f = Path("/Users/roseonyema/Documents/code/idp/backstage/plugins/fleetview-backend/src/fleetview_backend/serve.py")
+      src = f.read_text()
+      # Remove the /voice/turns route (with its preceding comment block).
+      pattern = re.compile(
+          r"    # Voice turns log -- the React panel on /fleet polls this to render.*?return JSONResponse\(\n            content=\{.*?status_code=200,\n        \)\n\n",
+          re.DOTALL,
+      )
+      new_src, n = pattern.subn("", src)
+      if n != 1:
+          print(f"FAIL: expected 1 /voice/turns route removal, got {n}", file=sys.stderr)
+          sys.exit(1)
+      f.write_text(new_src)
+      print(f"OK serve.py: removed /voice/turns route. {len(src)} -> {len(new_src)} bytes")
+      PY
+    timeout: 10
+  - name: clean-rsa-narrative-docs
+    cmd: |
+      rm -f /Users/roseonyema/Documents/code/idp/platform/rsa/WHAT_IS_LIVE.md
+      rm -f /Users/roseonyema/Documents/code/idp/platform/rsa/VOICE_RESPONSE_VISION.md
+      echo "deleted WHAT_IS_LIVE.md + VOICE_RESPONSE_VISION.md"
+      ls /Users/roseonyema/Documents/code/idp/platform/rsa/ 2>&1 | head -20 || true
+    timeout: 5
+  - name: invariants
+    cmd: |
+      cd /Users/roseonyema/Documents/code/idp
+      echo "=== platform/rsa tree (kept) ==="
+      find platform/rsa -type f 2>&1 | sort
+      echo
+      echo "=== voice.py: no rsa_fast_path / _RSA_PHRASES_FALLBACK / _record_voice_turn references ==="
+      grep -nE "rsa_fast_path|_RSA_PHRASES_FALLBACK|_record_voice_turn" \
+         backstage/plugins/fleetview-backend/src/fleetview_backend/voice.py 2>&1 || echo "OK no stale references"
+      echo
+      echo "=== serve.py: no /voice/turns route ==="
+      grep -n "/voice/turns" \
+         backstage/plugins/fleetview-backend/src/fleetview_backend/serve.py 2>&1 || echo "OK /voice/turns removed"
+      echo
+      echo "=== catalogue.py: RSA_PHRASES still canonical ==="
+      grep -n "RSA_PHRASES" sovereign/voice/catalogue.py 2>&1 | head -3 || true
+      echo
+      echo "=== fleetview-backend tests (existing) ==="
+      ls backstage/plugins/fleetview-backend/tests/test_*.py 2>&1 || true
+    timeout: 15

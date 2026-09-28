@@ -1,0 +1,13 @@
+name: git-add-commit
+description: Stage and commit the mutation testing system files
+args: {}
+halt_on_failure: false
+steps:
+  - name: add
+    cmd: cd /Users/roseonyema/Documents/code/idp && git add hooks/ .github/workflows/mutation-nightly.yml .estate/bin/
+
+  - name: status
+    cmd: cd /Users/roseonyema/Documents/code/idp && git status --short
+
+  - name: commit
+    cmd: "cd /Users/roseonyema/Documents/code/idp && git commit -m 'feat: polyglot mutation testing system'"

@@ -1,0 +1,50 @@
+name: pr-open-files
+description: 'Open a PR from named files without touching any shared checkout. Makes
+  a throwaway worktree on origin/main with a new branch (refuses main or an existing
+  branch), copies each listed file from src (deletes it if absent in src), runs the
+  named tests there and refuses if red, commits (hooks run), writes a BDD-PROOF block
+  with the commit''s head sha and the test counts under body_file, pushes, runs gh
+  pr create, and removes the worktree. Writes: one new branch on origin plus one PR.
+  Never merges.'
+args:
+  src:
+    type: string
+    help: Path of the checkout or worktree the files are copied from
+  branch:
+    type: string
+    help: New branch name; must not exist; never main
+  files:
+    type: string
+    help: Space-separated repo-relative paths
+  tests:
+    type: string
+    help: One repo-relative pytest path run in the new worktree before commit
+  message:
+    type: string
+    help: Commit message
+  title:
+    type: string
+    help: PR title
+  body_file:
+    type: string
+    help: Path to the PR body markdown; the BDD-PROOF block is appended
+halt_on_failure: true
+steps:
+- name: pr-open-files
+  cmd: "set -euf\nsrc={{src}}; br={{branch}}\ncase \"$br\" in ''|main|master) echo\
+    \ \"refused: branch '$br'\" >&2; exit 1;; esac\nwt=$(mktemp -d /tmp/estate-pr.XXXXXX);\
+    \ rmdir \"$wt\"\ngit -C \"$src\" fetch -q origin main\ngit -C \"$src\" worktree\
+    \ add -q -b \"$br\" \"$wt\" origin/main\ntrap 'git -C \"$src\" worktree remove\
+    \ --force \"$wt\" >/dev/null 2>&1 || true' EXIT\nfor f in $(printf '%s' {{files}});\
+    \ do\n  if [ -e \"$src/$f\" ]; then mkdir -p \"$wt/$(dirname \"$f\")\"; cp -p\
+    \ \"$src/$f\" \"$wt/$f\"; git -C \"$wt\" add -- \"$f\"\n  else git -C \"$wt\"\
+    \ rm -q -- \"$f\"; fi\ndone\npy=python3; [ -x \"$HOME/Documents/code/idp/.venv/bin/python\"\
+    \ ] && py=\"$HOME/Documents/code/idp/.venv/bin/python\"\nset +e\nres=$(cd \"$wt\"\
+    \ && \"$py\" -m pytest -o addopts= -p no:cacheprovider -q {{tests}} 2>&1); rc=$?\n\
+    set -e\nprintf '%s\\n' \"$res\" | tail -15\n[ \"$rc\" -eq 0 ] || { echo \"refused:\
+    \ tests red, nothing committed\" >&2; exit 1; }\ngit -C \"$wt\" commit -q -m {{message}}\n\
+    sha=$(git -C \"$wt\" rev-parse HEAD)\nbodyf=$(mktemp /tmp/estate-pr-body.XXXXXX)\n\
+    { cat {{body_file}}; printf '\\n\\nBDD-PROOF\\nhead: %s\\n```\\n%s\\n```\\nEND-BDD-PROOF\\\
+    n' \"$sha\" \"$(printf '%s\\n' \"$res\" | tail -3)\"; } > \"$bodyf\"\ngit -C \"\
+    $wt\" push -q -u origin \"$br\"\ngh pr create -R chidionyema/idp --base main --head\
+    \ \"$br\" --title {{title}} --body-file \"$bodyf\""

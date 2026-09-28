@@ -1,0 +1,30 @@
+name: rsa-fleetview-test
+description: Run the fleetview-backend tests for the new RSA status routes
+class: read
+args:
+  repo: {type: string, default: "/Users/roseonyema/Documents/code/idp"}
+halt_on_failure: false
+timeout: 120
+steps:
+  - name: discover-test-style
+    cmd: |
+      estate_invoke intent=pobr-gate 2>&1 | head -10
+      bash -c "      cd <<repo>>/backstage/plugins/fleetview-backend
+      ls tests/ | head -10
+      "
+      cat setup.cfg 2>/dev/null | head -20
+      cat pyproject.toml 2>/dev/null | head -30
+      cat conftest.py 2>/dev/null | head -30
+    timeout: 5
+  - name: smoke-import-via-py-path
+    cmd: |
+      cd <<repo>>/backstage/plugins/fleetview-backend
+      PYTHONPATH=src python3 -c "from fleetview_backend import rsa; print('ok')"
+      PYTHONPATH=src python3 -c "from fleetview_backend import routes; print('ok')"
+      PYTHONPATH=src python3 -c "from fleetview_backend.routes import RSA_STATUS_PATH, RSA_DRIFT_SCAN_PATH; print('paths:', RSA_STATUS_PATH, RSA_DRIFT_SCAN_PATH)"
+    timeout: 10
+  - name: pytest-rsa
+    cmd: |
+      cd <<repo>>/backstage/plugins/fleetview-backend
+      PYTHONPATH=src python3 -m pytest tests/test_rsa_module.py -v --no-header 2>&1 | tail -30
+    timeout: 60

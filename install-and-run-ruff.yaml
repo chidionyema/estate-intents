@@ -1,0 +1,8 @@
+name: install-and-run-ruff
+description: Install and run ruff
+halt_on_failure: false
+steps:
+  - name: run
+    timeout: 120
+    cmd: >
+      python3 /Users/roseonyema/.estate/scripts/install-and-run-ruff.py

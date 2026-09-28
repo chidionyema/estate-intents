@@ -1,0 +1,5 @@
+name: shadow-workflow
+description: Read shadow-verify workflow
+halt_on_failure: false
+steps:
+  - cmd: "cd /Users/roseonyema/Documents/code/idp && git show origin/main:.github/workflows/shadow-verify.yml 2>/dev/null | head -50 || echo 'not on main'"

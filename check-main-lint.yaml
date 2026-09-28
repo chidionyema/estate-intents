@@ -1,0 +1,8 @@
+name: check-main-lint
+description: Check if lint issues are pre-existing
+halt_on_failure: false
+steps:
+  - name: run
+    timeout: 120
+    cmd: >
+      python3 /Users/roseonyema/.estate/scripts/check-main-lint.py

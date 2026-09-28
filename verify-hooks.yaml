@@ -1,0 +1,7 @@
+name: verify-hooks
+description: Verify git hooks are configured
+args: {}
+halt_on_failure: false
+steps:
+  - name: verify
+    cmd: cd /Users/roseonyema/Documents/code/idp && git config core.hooksPath && echo "---" && ls -la hooks/ && echo "---" && head -3 hooks/pre-commit

@@ -1,0 +1,8 @@
+name: sign-merge
+description: Sign merge commit and push
+halt_on_failure: false
+steps:
+  - name: run
+    timeout: 180
+    cmd: >
+      python3 /Users/roseonyema/.estate/scripts/sign-merge.py

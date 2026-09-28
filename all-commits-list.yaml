@@ -1,0 +1,15 @@
+name: all-commits-list
+description: "All commits last 10d, one-liner per commit, deduplicated by sha."
+class: read
+args:
+  apply:
+    type: bool
+    default: false
+halt_on_failure: false
+timeout: 30
+steps:
+  - name: list
+    cmd: |
+      cd /Users/roseonyema/Documents/code/idp
+      git log --all --since="2026-09-18" --pretty=format:"%h | %ad | %an | %s" --date=short --no-merges 2>&1 | sort -u | head -100
+    timeout: 30

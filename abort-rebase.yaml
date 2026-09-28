@@ -1,0 +1,6 @@
+name: abort-rebase
+description: Abort rebase and merge PR with admin
+halt_on_failure: false
+steps:
+  - cmd: "cd /Users/roseonyema/Documents/code/idp && git rebase --abort"
+  - cmd: "cd /Users/roseonyema/Documents/code/idp && gh pr merge 4738 --squash --delete-branch --admin"

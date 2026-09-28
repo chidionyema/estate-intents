@@ -1,0 +1,8 @@
+name: check-ci-final
+description: Check final CI status
+halt_on_failure: false
+steps:
+  - name: run
+    timeout: 60
+    cmd: >
+      python3 /Users/roseonyema/.estate/scripts/check-ci-final.py

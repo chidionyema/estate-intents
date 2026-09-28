@@ -1,0 +1,5 @@
+name: get-error
+description: Get workflow failures
+halt_on_failure: false
+steps:
+  - cmd: "python3 /Users/roseonyema/.estate/intents/get-error.py 2>&1"

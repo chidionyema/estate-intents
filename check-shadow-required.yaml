@@ -1,0 +1,8 @@
+name: check-shadow-required
+description: Check if shadow-verify is required
+halt_on_failure: false
+steps:
+  - name: run
+    timeout: 60
+    cmd: >
+      python3 /Users/roseonyema/.estate/scripts/check-shadow-required.py

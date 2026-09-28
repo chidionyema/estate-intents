@@ -1,0 +1,5 @@
+name: job-log
+description: Get fast-gate log
+halt_on_failure: false
+steps:
+  - cmd: "cd /Users/roseonyema/Documents/code/idp && gh run view 36397926045 --log 2>&1 | grep -A5 -i 'error\|fail\|exit' | head -40"

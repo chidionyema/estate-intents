@@ -1,0 +1,5 @@
+name: run-executes
+description: Run executes-gate locally
+halt_on_failure: false
+steps:
+  - cmd: "cd /Users/roseonyema/Documents/code/idp && git fetch origin main && bin/test-executes-gate $(git merge-base origin/main HEAD) 2>&1"

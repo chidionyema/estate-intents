@@ -1,0 +1,47 @@
+name: rsa-estate-numbers
+description: Count source lines, list workspace crates, count tests. Bounded 30s, no cargo build.
+class: mutate
+args:
+  apply:
+    type: bool
+    default: false
+halt_on_failure: false
+timeout: 30
+steps:
+  - name: count-lines
+    cmd: |
+      estate_invoke intent=pobr-gate 2>&1 | head -10
+      bash -c "      cd /Users/roseonyema/Documents/code/idp
+      echo "=== source line counts by language ==="
+      "
+      for ext in py rs ts tsx go java rb sh yml yaml md; do
+        n=$(find . -type f -name "*.$ext" -not -path '*/node_modules/*' -not -path '*/target/*' -not -path '*/.git/*' -not -path '*/dist/*' -not -path '*/build/*' 2>/dev/null | xargs cat 2>/dev/null | wc -l)
+        f=$(find . -type f -name "*.$ext" -not -path '*/node_modules/*' -not -path '*/target/*' -not -path '*/.git/*' -not -path '*/dist/*' -not -path '*/build/*' 2>/dev/null | wc -l)
+        printf "  %-6s  %8d files  %10d lines\n" ".$ext" "$f" "$n"
+      done
+      echo
+      echo "=== TOTAL (excluding target/node_modules/.git) ==="
+      find . -type f \( -name '*.py' -o -name '*.rs' -o -name '*.ts' -o -name '*.tsx' -o -name '*.go' -o -name '*.java' -o -name '*.rb' -o -name '*.sh' -o -name '*.yml' -o -name '*.yaml' -o -name '*.md' \) -not -path '*/target/*' -not -path '*/node_modules/*' -not -path '*/.git/*' -not -path '*/dist/*' -not -path '*/build/*' 2>/dev/null | xargs cat 2>/dev/null | wc -l
+    timeout: 30
+  - name: rsa-workspace
+    cmd: |
+      cd /Users/roseonyema/Documents/code/idp/platform/rsa
+      echo "=== RSA workspace structure ==="
+      echo "crates:"
+      ls -d */ 2>/dev/null
+      echo
+      echo "rust files (excl target):"
+      find . -type f -name '*.rs' -not -path '*/target/*' | wc -l
+      echo
+      echo "rust files with line counts:"
+      find . -type f -name '*.rs' -not -path '*/target/*' | sort | xargs wc -l 2>/dev/null
+      echo
+      echo "tests (count #[test] functions):"
+      grep -rE '^[[:space:]]*#\[(tokio::)?test' --include='*.rs' agent/tests verifier 2>/dev/null | wc -l
+    timeout: 30
+  - name: cargo-test-quick
+    cmd: |
+      cd /Users/roseonyema/Documents/code/idp/platform/rsa
+      echo "=== cargo test --lib -p rsa-agent (no workspace rebuild, cached deps only) ==="
+      timeout 50 cargo test --lib -p rsa-agent --no-fail-fast 2>&1 | tail -25
+    timeout: 60

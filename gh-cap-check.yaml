@@ -1,0 +1,7 @@
+name: gh-cap-check
+description: Find cap check definition
+halt_on_failure: false
+steps:
+  - name: run
+    cmd: >
+      python3 /Users/roseonyema/.estate/scripts/gh-cap-check.py

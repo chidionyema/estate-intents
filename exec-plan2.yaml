@@ -1,0 +1,7 @@
+name: exec-plan2
+description: Close PRs and reopen #4731
+halt_on_failure: false
+steps:
+  - name: run
+    cmd: >
+      python3 /Users/roseonyema/.estate/scripts/exec-plan2.py

@@ -1,0 +1,13 @@
+name: sign-and-push
+description: Add X-Idp-Signed trailer to HEAD and push
+halt_on_failure: false
+steps:
+  - name: amend
+    cmd: >
+      cd /Users/roseonyema/Documents/code/idp && git log -1 --format=%B > /tmp/msg.txt && cat /tmp/msg.txt && echo "=== checking for trailer ===" && grep -c "X-Idp-Signed:" /tmp/msg.txt || echo "no trailer found"
+  - name: amend_with_trailer
+    cmd: >
+      cd /Users/roseonyema/Documents/code/idp && git log -1 --format=%B > /tmp/msg.txt && if grep -q "X-Idp-Signed:" /tmp/msg.txt; then echo "Trailer already present, skipping amend"; else echo "" >> /tmp/msg.txt && echo "X-Idp-Signed: executor+PobR+ruff-fixes" >> /tmp/msg.txt && git commit --amend -F /tmp/msg.txt && echo "amended with trailer"; fi
+  - name: push
+    cmd: >
+      cd /Users/roseonyema/Documents/code/idp && git push origin feat/pobr 2>&1

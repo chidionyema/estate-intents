@@ -1,0 +1,5 @@
+name: step1-main
+description: Switch to main
+halt_on_failure: false
+steps:
+  - cmd: "cd /Users/roseonyema/Documents/code/idp && git checkout main && git pull origin main && git checkout -b add/mutation-pr-gate"

@@ -1,0 +1,6 @@
+name: graph-next
+description: Run growmos next to process pending extraction tasks
+steps:
+  - name: next
+    cmd: >
+      growmos --root ~/Documents/code/estate-graph next 2>&1 | head -50

@@ -1,0 +1,12 @@
+name: graph-journal
+description: Record session findings to growmos graph
+steps:
+  - name: journal
+    cmd: >
+      growmos --root ~/Documents/code/estate-graph journal "Executor resilience session: estate_executor.py was NOT in main despite PR #4731 merge - it was in feat/pobr branch which was deleted without merging. Restored from git history (366ccef70). PR #4744 opened to merge restoration. Executor daemon revived and healthy (pid 59318). PoBR files committed in feat/pobr branch (bc164d327) but feat/pobr was deleted after merge. PoBR grant system (pobr_grant.py) committed to mcp/plugins/ but feat/pobr branch gone - needs separate PR to merge."
+  - name: remember
+    cmd: >
+      growmos --root ~/Documents/code/estate-graph remember "estate_executor.py missing in main" --type PROBLEM --desc "The estate_executor.py file was deleted in a7d721151 (PR #3956 consolidation) but was never restored. It existed in feat/pobr branch but that branch was deleted without merging. The daemon.py integrity guard (added in PR #4731) detects the missing file and exits FATAL."
+  - name: remember2
+    cmd: >
+      growmos --root ~/Documents/code/estate-graph remember "executor restored via PR #4744" --type EVENT --desc "estate_executor.py restored from git history (366ccef70) via PR #4744. Committed at d0c99708. Executor daemon now healthy (pid 59318)."

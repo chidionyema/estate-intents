@@ -1,0 +1,5 @@
+name: when-test-main
+description: Check if test exists on main
+halt_on_failure: false
+steps:
+  - cmd: "cd /Users/roseonyema/Documents/code/idp && git fetch origin main && git show origin/main:tests/test_local_claude_max_lane.py 2>/dev/null | head -3 && echo 'EXISTS ON MAIN' || echo 'NOT ON MAIN'"

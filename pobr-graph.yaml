@@ -1,0 +1,30 @@
+name: pobr-graph
+description: Link PoBR entities in the estate knowledge graph.
+
+steps:
+  - name: link-graph
+    cmd: |
+      estate_invoke intent=pobr-gate 2>&1 | head -10
+      bash -c "      python3 - <<'PYEOF'
+      import subprocess, json
+      graph_root = "/Users/roseonyema/Documents/code/estate-graph"
+      ops = [
+          ("growmos", "--root", graph_root, "remember", "PoBR", "--type", "SYSTEM",
+           "--desc", "Proof of Bayesian Reasoning — Bayesian calibration gate for AI agents"),
+          ("growmos", "--root", graph_root, "remember", "feat/pobr-worktree", "--type", "SYSTEM",
+           "--desc", "Worktree at /Users/roseonyema/Documents/code/worktrees/pobr, branch feat/pobr, commit 32196c620"),
+          ("growmos", "--root", graph_root, "remember", "PoBRGate", "--type", "SYSTEM",
+           "--desc", "9-check deterministic gate: structure, merkle_root, signature, anchor, completeness, ECE<0.05, Brier<0.15, prior sensitivity, faithfulness, counterfactual"),
+          ("growmos", "--root", graph_root, "remember", "PoBR-Ed25519-Key", "--type", "SYSTEM",
+           "--desc", "Ed25519 agent signing key at ~/.estate/keys/agent.pem"),
+          ("growmos", "--root", graph_root, "remember", "Executor-Hang", "--type", "SYSTEM",
+           "--desc", "estate_execute daemon (pid 3554) hung on all shell commands — shell-verify.py guard fixed but daemon still unresponsive; estate_invoke works"),
+          ("growmos", "--root", graph_root, "link", "PoBR", "uses", "EvidenceMesh"),
+          ("growmos", "--root", graph_root, "link", "PoBR", "uses", "PAD-017"),
+          ("growmos", "--root", graph_root, "link", "PoBRGate", "part-of", "idp"),
+          ("growmos", "--root", graph_root, "link", "PoBR", "anchored-by", "Aevum-PACR"),
+      ]
+      for op in ops:
+          r = subprocess.run(list(op), capture_output=True, text=True, timeout=10)
+          print(f"{' '.join(op[-2:])} -> rc={r.returncode}")
+      PYEOF

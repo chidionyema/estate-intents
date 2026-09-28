@@ -1,0 +1,5 @@
+name: when-test
+description: Check when test file was added
+halt_on_failure: false
+steps:
+  - cmd: "cd /Users/roseonyema/Documents/code/idp && git log --oneline origin/main..HEAD -- tests/test_local_claude_max_lane.py && echo '---' && git log --oneline origin/main -- tests/test_local_claude_max_lane.py | head -5"

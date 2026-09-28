@@ -1,0 +1,45 @@
+name: rsa-voice-visual
+description: Restart fleetview with new route, prove voice turns land on /voice/turns
+class: mutate
+args: {}
+halt_on_failure: false
+timeout: 90
+steps:
+  - name: kill-and-start
+    cmd: |
+      estate_invoke intent=pobr-gate 2>&1 | head -10
+      bash -c "      pkill -9 -f serve-live.mjs 2>/dev/null
+      pkill -9 -f serve_rsa.py 2>/dev/null
+      "
+      sleep 2
+      cd /tmp/rsa-render
+      PYTHONPATH=/Users/roseonyema/Documents/code/idp/backstage/plugins/fleetview-backend/src:/Users/roseonyema/Documents/code/idp/sovereign nohup python3 /tmp/serve_rsa.py > /tmp/fleetview.log 2>&1 </dev/null &
+      echo "fleetview pid: $!"
+      sleep 4
+      lsof -nP -iTCP:4008 -sTCP:LISTEN 2>&1 | head -3
+    timeout: 15
+  - name: prove
+    cmd: |
+      echo "=== Voice command: rsa status ==="
+      curl -s -X POST http://127.0.0.1:4008/voice/stream -H 'Content-Type: application/json' -d '{"question": "rsa status", "history": []}' | head -5
+      echo
+      echo "=== Voice command: drift ==="
+      curl -s -X POST http://127.0.0.1:4008/voice/stream -H 'Content-Type: application/json' -d '{"question": "drift", "history": []}' | head -5
+      echo
+      echo "=== Voice command: regenerability ==="
+      curl -s -X POST http://127.0.0.1:4008/voice/stream -H 'Content-Type: application/json' -d '{"question": "regenerability", "history": []}' | head -5
+      echo
+      echo "=== /voice/turns endpoint ==="
+      curl -s http://127.0.0.1:4008/voice/turns | python3 -c "
+import json, sys
+data = json.load(sys.stdin)
+turns = data.get('recent', [])
+print(f'panel will see {len(turns)} turns')
+for t in turns[:6]:
+    at = (t.get('heard_at') or '')[:19]
+    print(f\"  [{at}] outcome={t.get('outcome')} text={(t.get('detail') or '')[:60]}\")
+"
+      echo
+      echo "=== DB sanity ==="
+      sqlite3 /Users/roseonyema/Documents/code/idp/catalog/estate.db "SELECT id, outcome, substr(detail,1,50) FROM voice_turns WHERE outcome LIKE 'rsa-fast-path%' ORDER BY id DESC LIMIT 5"
+    timeout: 30

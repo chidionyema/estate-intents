@@ -1,0 +1,5 @@
+name: read-nightly
+description: Read mutation-nightly.yml around line 84
+halt_on_failure: false
+steps:
+  - cmd: "cd /Users/roseonyema/Documents/code/idp && git show origin/main:.github/workflows/mutation-nightly.yml | sed -n '75,95p'"

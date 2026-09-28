@@ -1,0 +1,5 @@
+name: add-gate-main
+description: Get mutation-pr-gate.yml onto main via separate PR
+halt_on_failure: false
+steps:
+  - cmd: "python3 /Users/roseonyema/.estate/intents/add-gate-main.py"

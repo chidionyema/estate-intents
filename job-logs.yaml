@@ -1,0 +1,5 @@
+name: job-logs
+description: Get job logs
+halt_on_failure: false
+steps:
+  - cmd: "python3 /Users/roseonyema/.estate/intents/job-logs.py 2>&1 | head -80"

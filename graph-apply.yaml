@@ -1,0 +1,6 @@
+name: graph-apply
+description: Apply growmos extraction
+steps:
+  - name: apply
+    cmd: >
+      growmos --root ~/Documents/code/estate-graph apply extraction /tmp/extract_src_95f72fd2f522_0.json --source src_95f72fd2f522 --chunk 0 2>&1

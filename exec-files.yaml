@@ -1,0 +1,5 @@
+name: exec-files
+description: Check what files changed to executable
+halt_on_failure: false
+steps:
+  - cmd: "cd /Users/roseonyema/Documents/code/idp && git diff origin/main --name-only | while read f; do [ -x \"$f\" ] && echo \"$f\"; done 2>/dev/null | head -20 && echo '---' && git diff origin/main --diff-filter=ACMX --name-status | head -20"

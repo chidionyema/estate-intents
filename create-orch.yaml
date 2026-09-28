@@ -1,0 +1,7 @@
+name: create-orch
+description: Copy orchestrator to idp repo
+args: {}
+halt_on_failure: false
+steps:
+  - name: copy
+    cmd: mkdir -p /Users/roseonyema/Documents/code/idp/.estate/bin && cp /Users/roseonyema/.estate/bin/mutation-orchestrator /Users/roseonyema/Documents/code/idp/.estate/bin/mutation-orchestrator && chmod +x /Users/roseonyema/Documents/code/idp/.estate/bin/mutation-orchestrator && ls -la /Users/roseonyema/Documents/code/idp/.estate/bin/

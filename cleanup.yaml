@@ -1,0 +1,5 @@
+name: cleanup
+description: Abort rebase and check state
+halt_on_failure: false
+steps:
+  - cmd: "cd /Users/roseonyema/Documents/code/idp && git rebase --abort && git status --short"

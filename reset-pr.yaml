@@ -1,0 +1,8 @@
+name: reset-pr
+description: Reset feat/pobr to clean state and merge main
+halt_on_failure: false
+steps:
+  - name: run
+    timeout: 300
+    cmd: >
+      python3 /Users/roseonyema/.estate/scripts/reset-pr.py

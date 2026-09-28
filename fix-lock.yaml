@@ -1,0 +1,5 @@
+name: fix-lock
+description: Remove lock and switch to main
+halt_on_failure: false
+steps:
+  - cmd: "rm -f /Users/roseonyema/Documents/code/idp/.git/index.lock"

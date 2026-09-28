@@ -1,0 +1,18 @@
+name: kubectl-logs
+description: Tail pod logs. Returns raw text.
+args:
+  pod:       {type: string}
+  namespace: {type: string, default: "default"}
+  container: {type: string, default: ""}
+  lines:    {type: int, default: 50}
+  since:    {type: string, default: ""}
+  previous: {type: bool, default: false}
+  kubeconfig: {type: string, default: ""}
+steps:
+  - name: logs
+    cmd: >
+      KUBECONFIG={{kubeconfig}} kubectl --request-timeout=30s
+      -n {{namespace}} logs {{pod}}
+      {{if(container,'-c ' + container,'')}}
+      --tail={{lines}} {{if(since,'--since=' + since,'')}}
+      {{if(previous,'--previous','')}} 2>/dev/null

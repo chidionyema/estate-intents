@@ -1,0 +1,6 @@
+name: check-pr-status
+description: Check PR 4731 status checks
+halt_on_failure: false
+steps:
+  - cmd: "cd /Users/roseonyema/Documents/code/idp && gh api repos/chidionyema/idp/pulls/4731/status-checks --jq '.checks[] | \"\\(.context) \\(.state) \\(.url)\"' 2>/dev/null || echo 'no checks endpoint'"
+  - cmd: "cd /Users/roseonyema/Documents/code/idp && gh api repos/chidionyema/idp/commits/$(gh pr view 4731 --json headRefName --jq .headRefName)/status --jq '.statuses[] | \"\\(.context) \\(.state) \\(.target_url)\"' 2>/dev/null | head -20 || echo 'no statuses'"

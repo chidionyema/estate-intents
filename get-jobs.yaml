@@ -1,0 +1,5 @@
+name: get-jobs
+description: Get workflow jobs
+halt_on_failure: false
+steps:
+  - cmd: "python3 /Users/roseonyema/.estate/intents/get-jobs.py 2>&1"

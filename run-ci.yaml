@@ -1,0 +1,5 @@
+name: run-ci
+description: Run fast-gate locally
+halt_on_failure: false
+steps:
+  - cmd: "cd /Users/roseonyema/Documents/code/idp && IDP_CI_FAST=1 bin/idp-ci 2>&1 | tail -30"

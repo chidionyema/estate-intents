@@ -1,0 +1,8 @@
+name: get-run-logs
+description: Get workflow run logs
+halt_on_failure: false
+steps:
+  - name: run
+    timeout: 60
+    cmd: >
+      python3 /Users/roseonyema/.estate/scripts/get-run-logs.py

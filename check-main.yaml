@@ -1,0 +1,8 @@
+name: check-main
+description: Check main branch for PoBR changes
+halt_on_failure: false
+steps:
+  - name: run
+    timeout: 15
+    cmd: >
+      cd /Users/roseonyema/Documents/code/idp && git fetch origin main && git log --oneline origin/main | head -5

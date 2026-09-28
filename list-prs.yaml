@@ -1,0 +1,7 @@
+name: list-prs
+description: List open PRs
+halt_on_failure: false
+steps:
+  - name: run
+    cmd: >
+      python3 /Users/roseonyema/.estate/scripts/list-prs.py

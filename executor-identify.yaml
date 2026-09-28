@@ -1,0 +1,37 @@
+name: executor-identify
+description: Identify what process 3554 is and find the real executor daemon.
+
+steps:
+  - name: identify
+    cmd: |
+      estate_invoke intent=pobr-gate 2>&1 | head -10
+      bash -c "      python3 - <<'PYEOF'
+      import subprocess
+      from pathlib import Path
+
+      # Check process 3554
+      r = subprocess.run(
+          ["ps", "-p", "3554", "-o", "pid,ppid,state,etime,command"],
+          capture_output=True, text=True, timeout=5
+      )
+      print(f"Process 3554:\n{r.stdout}")
+      print(f"stderr: {r.stderr}")
+
+      # What is the estate_executor_status checking?
+      # Check for estate DB or socket
+      home = Path.home()
+      estate_db = home / ".estate" / "estate.db"
+      estate_sock = home / ".estate" / "estate.sock"
+      estate_pidfile = home / ".estate" / "executor.pid"
+
+      print(f"\nDB exists: {estate_db.exists()} ({estate_db})")
+      print(f"Socket exists: {estate_sock.exists()} ({estate_sock})")
+      print(f"PID file exists: {estate_pidfile.exists()} ({estate_pidfile})")
+      if estate_pidfile.exists():
+          print(f"PID file content: {estate_pidfile.read_text().strip()}")
+
+      # Check all estate-execute related processes
+      r2 = subprocess.run(["pgrep", "-a", "-f", "estate"],
+                        capture_output=True, text=True, timeout=5)
+      print(f"\nAll estate* processes:\n{r2.stdout or 'none'}")
+      PYEOF

@@ -1,0 +1,14 @@
+name: kubectl
+description: Thin kubectl wrapper. resource and name required.
+args:
+  resource:  {type: string}
+  name:       {type: string, default: ""}
+  namespace:  {type: string, default: ""}
+  output:     {type: string, default: "json"}
+  extra:      {type: string, default: ""}
+  kubeconfig: {type: string, default: ""}
+steps:
+  - name: run
+    cmd: >
+      KUBECONFIG={{kubeconfig}} kubectl --request-timeout=30s
+      get {{resource}} {{name}} -n {{namespace}} -o {{output}} {{extra}} 2>/dev/null

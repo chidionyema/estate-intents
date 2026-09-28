@@ -1,0 +1,13 @@
+name: flux-reconcile
+description: Force reconcile a Flux source or resource.
+args:
+  kind:     {type: string, description: "GitRepository|Kustomization|HelmRepository|HelmRelease"}
+  name:     {type: string}
+  namespace: {type: string, default: "flux-system"}
+  with_source: {type: bool, default: false}
+  kubeconfig: {type: string, default: ""}
+steps:
+  - name: reconcile
+    cmd: >
+      KUBECONFIG={{kubeconfig}} flux --request-timeout=30s reconcile {{kind}}
+      {{name}} -n {{namespace}} {{if(with_source,'--with-source','')}} 2>&1

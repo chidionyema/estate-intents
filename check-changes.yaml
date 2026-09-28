@@ -1,0 +1,5 @@
+name: check-changes
+description: Check changes that could break CI
+halt_on_failure: false
+steps:
+  - cmd: "cd /Users/roseonyema/Documents/code/idp && git diff origin/main --stat | head -30"

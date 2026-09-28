@@ -1,0 +1,5 @@
+name: check-merge
+description: Check PR merge requirements
+halt_on_failure: false
+steps:
+  - cmd: "cd /Users/roseonyema/Documents/code/idp && gh api repos/chidionyema/idp/pulls/4731 --jq '{mergeable, mergeable_state, merge_state_status, state, status}' 2>/dev/null"

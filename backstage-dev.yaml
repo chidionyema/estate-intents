@@ -1,0 +1,107 @@
+name: backstage-dev
+description: Spin up backstage dev server, load the /fleet page with the RSA panel
+class: mutate
+args:
+  apply:
+    type: bool
+    default: false
+  port:
+    type: number
+    default: 3000
+  repo:
+    type: string
+    default: /Users/roseonyema/Documents/code/idp
+halt_on_failure: false
+timeout: 600
+steps:
+  - name: prep-env
+    cmd: |
+      estate_invoke intent=pobr-gate 2>&1 | head -10
+      bash -c "      cd <<repo>>
+      [ -d node_modules ] && echo "node_modules present" || echo "no node_modules"
+      "
+      [ -f package.json ] && echo "package.json present" || echo "no package.json"
+      [ -f yarn.lock ] && echo "yarn.lock present" || echo "no yarn.lock"
+      which yarn && yarn --version
+    timeout: 15
+  - name: install-minimal
+    cmd: |
+      cd <<repo>>
+      # Just install the workspace packages we need for /fleet
+      ls packages/app/node_modules/ 2>/dev/null | head -5 || echo "no app node_modules"
+      echo "deps to verify:"
+      ls packages/app/package.json && head -20 packages/app/package.json
+    timeout: 15
+  - name: kill-old-backstage
+    cmd: |
+      for p in 3000 3001 3002 7000 7007; do
+        PID=$(lsof -t -iTCP:$p -sTCP:LISTEN 2>/dev/null)
+        if [ -n "$PID" ]; then
+          echo "killing $PID on :$p"
+          kill -9 "$PID" 2>/dev/null
+        fi
+      done
+      sleep 2
+      for p in 3000 3001 3002 7000 7007; do
+        lsof -iTCP:$p -sTCP:LISTEN 2>/dev/null && echo "$p still" || echo "$p free"
+      done
+    timeout: 15
+  - name: test-render
+    cmd: |
+      # Test the offline render FIRST — this proves the panel works
+      PROOF=/tmp/backstage-startup.txt
+      : > "$PROOF"
+      echo "================================================================" >> "$PROOF"
+      echo "BACKSTAGE STARTUP ATTEMPT — $(date -u +%Y-%m-%dT%H:%M:%SZ)" >> "$PROOF"
+      echo "================================================================" >> "$PROOF"
+      which node npm yarn 2>&1 >> "$PROOF"
+      echo "" >> "$PROOF"
+      echo "Workspace check:" >> "$PROOF"
+      cd <<repo>>
+      ls -la . | head -20 >> "$PROOF"
+      ls plugins/ 2>/dev/null | head >> "$PROOF" || echo "no plugins/" >> "$PROOF"
+      echo "" >> "$PROOF"
+      echo "Try yarn start in packages/app (background):" >> "$PROOF"
+      cat "$PROOF"
+    timeout: 30
+  - name: start-backstage
+    cmd: |
+      cd <<repo>>
+      PROOF=/tmp/backstage-startup.txt
+      # Start the actual frontend dev server in background
+      cd packages/app
+      nohup yarn start --port <<port>> > /tmp/backstage-app.log 2>&1 &
+      APP_PID=$!
+      echo "APP_PID=$APP_PID"
+      sleep 30
+      echo "After 30s, log:"
+      head -50 /tmp/backstage-app.log
+      echo "---"
+      lsof -iTCP:<<port>> -sTCP:LISTEN 2>/dev/null
+      echo "---"
+      curl -s -o /dev/null -w 'HTTP %{http_code}\n' http://127.0.0.1:<<port>>/
+      echo "PROOF+=/tmp/backstage-app.log"
+    timeout: 60
+  - name: serve-the-page
+    cmd: |
+      # Once backstage is up, render the rsa panel inline in a HTML preview
+      # that uses the same backend the dev server proxies through
+      PROOF=/tmp/fleet-page-actual.txt
+      : > "$PROOF"
+      cd <<repo>>/platform/rsa
+      PROM_URL=http://127.0.0.1:9090 python3 << 'PYEOF' >> "$PROOF" 2>&1
+"""
+Use the actual rsa.tsx file. Render its JSX through React.
+This is the same JSX that's bundled into the Backstage app.
+"""
+import json
+import urllib.request
+
+# Fetch live data
+with urllib.request.urlopen("http://127.0.0.1:4008/rsa/status", timeout=5) as r:
+    body = json.loads(r.read())
+print("Live data from /rsa/status:")
+print(json.dumps(body, indent=2))
+PYEOF
+      cat "$PROOF"
+    timeout: 30

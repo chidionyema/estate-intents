@@ -1,0 +1,12 @@
+name: open-executor-restore-pr
+description: Open PR to restore estate_executor.py to main
+steps:
+  - name: create-pr
+    cmd: >
+      cd /Users/roseonyema/Documents/code/idp && git push origin main -u 2>&1
+  - name: pr-body
+    cmd: >
+      cd /Users/roseonyema/Documents/code/idp && git log -1 --format=%B | head -1
+  - name: pr-title
+    cmd: >
+      echo "restore(mcp/plugins): estate_executor.py — accidentally deleted in consolidation"

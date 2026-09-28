@@ -1,0 +1,5 @@
+name: fast-gate
+description: Read fast-gate workflow
+halt_on_failure: false
+steps:
+  - cmd: "cd /Users/roseonyema/Documents/code/idp && git show origin/main:.github/workflows/fast-gate.yml 2>/dev/null | head -80"

@@ -1,0 +1,24 @@
+name: pobr-journal
+description: Record PoBR completion facts to the estate knowledge graph.
+
+steps:
+  - name: journal
+    cmd: |
+      estate_invoke intent=pobr-gate 2>&1 | head -10
+      bash -c "      python3 - <<'PYEOF'
+      import subprocess, json
+      entries = [
+          "PoBR (Proof of Bayesian Reasoning) implemented in feat/pobr worktree at /Users/roseonyema/Documents/code/worktrees/pobr, committed at 32196c620",
+          "PoBR files: pobr_schema.py (Bayesian trace schema, Merkle root SHA-256, conjugate update, ECE, Brier, prior sweep, counterfactual, faithfulness), pobr_gate.py (9-check deterministic gate), pobr_orchestrator.py (full pipeline)",
+          "PoBR gate: all 9 checks ADMITTED on synthetic trace — ECE=0.02, Brier=0.12, rank_stable=True, posterior H1=1.0, signature verified Ed25519",
+          "PoBR intents: pobr-admit.yaml (run gate), pobr-keygen.yaml (Ed25519 keypair at ~/.estate/keys/agent.pem), pobr-test.yaml (synthetic trace test)",
+          "Executor daemon (estate_execute) stuck on all commands — shell-verify.py fix applied (IsADirectoryError guard), but daemon still hung; estate_invoke works; daemon needs restart",
+      ]
+      for entry in entries:
+          r = subprocess.run(
+              ["growmos", "--root", "/Users/roseonyema/Documents/code/estate-graph",
+               "journal", entry],
+              capture_output=True, text=True, timeout=10
+          )
+          print(f"journal: {entry[:60]}... -> rc={r.returncode}")
+      PYEOF

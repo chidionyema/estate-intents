@@ -1,0 +1,5 @@
+name: check-push
+description: Check if fix is pushed
+halt_on_failure: false
+steps:
+  - cmd: "cd /Users/roseonyema/Documents/code/idp && git fetch origin feat/pobr && git log --oneline origin/feat/pobr | head -3 && echo '---local---' && git log --oneline HEAD | head -3"

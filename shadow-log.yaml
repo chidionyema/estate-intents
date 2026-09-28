@@ -1,0 +1,5 @@
+name: shadow-log
+description: Get shadow-verify failure
+halt_on_failure: false
+steps:
+  - cmd: "python3 /Users/roseonyema/.estate/intents/shadow-log.py 2>&1"

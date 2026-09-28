@@ -1,0 +1,28 @@
+name: pobr-commit
+description: >
+  One-shot: add & commit PoBR files to feat/pobr worktree.
+args: {}
+steps:
+  - name: write-script
+    cmd: |4
+        python3 - <<'PYEOF'
+        import pathlib, subprocess
+        IDP="/Users/roseonyema/Documents/code/idp"
+        WT="/Users/roseonyema/Documents/code/worktrees/pobr"
+        files=["pobr_schema.py","pobr_gate.py","pobr_orchestrator.py"]
+        for f in files:
+            subprocess.run(["git","-C",WT,"add",f],check=True)
+        msg="feat(pobr): PoBR schema, gate, and orchestrator"
+        subprocess.run(["git","-C",WT,"commit","-m",msg],check=True)
+        sha=subprocess.run(["git","-C",WT,"rev-parse","HEAD"],capture_output=True,text=True,check=True).stdout.strip()
+        subprocess.run(["git","-C",IDP,"update-ref","refs/heads/feat/pobr",sha],check=True)
+        open("/tmp/pobr-result.txt","w").write("Done: "+sha+"\n")
+        PYEOF
+  - name: run
+    cmd: |
+      estate_invoke intent=pobr-gate 2>&1 | head -10
+      bash -c "      python3 /tmp/pobr-doit.py
+  - name: verify
+      "
+    cmd: |
+      cat /tmp/pobr-result.txt && git -C /Users/roseonyema/Documents/code/idp log -1 --oneline feat/pobr

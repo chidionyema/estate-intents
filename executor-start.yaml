@@ -1,0 +1,6 @@
+name: executor-start
+description: Start the estate executor daemon via the keepalive wrapper
+steps:
+  - name: write-script
+    cmd: >
+      python3 /tmp/start-executor.py

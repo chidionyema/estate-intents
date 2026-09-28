@@ -1,0 +1,8 @@
+name: clean-reset
+description: Reset feat/pobr to clean state
+halt_on_failure: false
+steps:
+  - name: run
+    timeout: 300
+    cmd: >
+      python3 /Users/roseonyema/.estate/scripts/clean-reset.py

@@ -1,0 +1,8 @@
+name: fix-conflicts2
+description: Fix PR conflicts fully
+halt_on_failure: false
+steps:
+  - name: run
+    timeout: 300
+    cmd: >
+      python3 /Users/roseonyema/.estate/scripts/fix-conflicts2.py

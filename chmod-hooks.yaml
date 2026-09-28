@@ -1,0 +1,7 @@
+name: chmod-hooks
+description: Make hooks executable
+args: {}
+halt_on_failure: false
+steps:
+  - name: chmod
+    cmd: chmod +x /Users/roseonyema/Documents/code/idp/hooks/setup-hooks.sh /Users/roseonyema/Documents/code/idp/hooks/pre-commit /Users/roseonyema/Documents/code/idp/hooks/pre-push && ls -la /Users/roseonyema/Documents/code/idp/hooks/

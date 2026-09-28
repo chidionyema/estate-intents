@@ -1,0 +1,19 @@
+name: all-commits-10d
+description: "Every commit across all branches in the last 10 days, one-line summary."
+class: read
+args:
+  apply:
+    type: bool
+    default: false
+halt_on_failure: false
+timeout: 30
+steps:
+  - name: list
+    cmd: |
+      cd /Users/roseonyema/Documents/code/idp
+      echo "=== branches ==="
+      git branch -a | head -30
+      echo
+      echo "=== commits since 2026-09-18 (all branches, all authors) ==="
+      git log --all --since="2026-09-18" --pretty=format:"%h | %ad | %an | %s%n%b" --date=short 2>&1 | head -200
+    timeout: 30

@@ -1,0 +1,54 @@
+name: executor-restart
+description: Get daemon socket path and restart.
+
+steps:
+  - name: restart
+    cmd: |
+      estate_invoke intent=pobr-gate 2>&1 | head -10
+      bash -c "      python3 - <<'PYEOF'
+      import subprocess, time, signal, os, re
+      from pathlib import Path
+
+      home = Path.home()
+      daemon_py = home / "Documents" / "code" / "idp" / "platform" / "executor" / "daemon.py"
+      content = daemon_py.read_text()
+
+      # Find SOCKET_PATH default
+      for line in content.splitlines():
+          if "SOCKET_PATH" in line:
+              print(repr(line.strip()))
+
+      # Read SOCKET env
+      sock_env = os.environ.get("EXECUTOR_SOCKET", "not set")
+      print(f"SOCKET env: {sock_env}")
+
+      # Check ~/.estate for socket
+      estate_dir = home / ".estate"
+      for f in estate_dir.iterdir():
+          if f.is_socket():
+              print(f"Socket found: {f}")
+          elif f.is_fifo():
+              print(f"FIFO found: {f}")
+
+      # The old daemon (pid 3554) is not listening on any socket
+      # This means it can't accept new connections
+      # It should be killed and restarted
+      print(f"\nKilling old daemon (pid 3554)...")
+      try:
+          os.kill(3554, signal.SIGTERM)
+          time.sleep(2)
+          os.kill(3554, 0)
+          print("Still alive, sending SIGKILL")
+          os.kill(3554, signal.SIGKILL)
+          time.sleep(1)
+          os.kill(3554, 0)
+          print("Still alive after SIGKILL!")
+      except ProcessLookupError:
+          print("PID 3554 is gone")
+      except PermissionError:
+          print("Permission denied - cannot kill other user's process")
+
+      # Check if still alive
+      r = subprocess.run(["ps", "-p", "3554"], capture_output=True)
+      print(f"ps result: rc={r.returncode}")
+      PYEOF

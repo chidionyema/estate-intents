@@ -1,0 +1,5 @@
+name: github-changes
+description: Check what changed in .github directory
+halt_on_failure: false
+steps:
+  - cmd: "cd /Users/roseonyema/Documents/code/idp && git fetch origin && git diff $(git merge-base origin/main HEAD)...HEAD --name-only -- .github/ | head -20 && echo '---' && git diff $(git merge-base origin/main HEAD)...HEAD -- .github/ | head -40"

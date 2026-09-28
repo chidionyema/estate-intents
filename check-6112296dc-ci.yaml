@@ -1,0 +1,8 @@
+name: check-6112296dc-ci
+description: Check CI on commit 6112296dc
+halt_on_failure: false
+steps:
+  - name: run
+    timeout: 60
+    cmd: >
+      python3 /Users/roseonyema/.estate/scripts/check-6112296dc-ci.py

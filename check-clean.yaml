@@ -1,0 +1,5 @@
+name: check-clean
+description: Check if file change was already committed
+halt_on_failure: false
+steps:
+  - cmd: "cd /Users/roseonyema/Documents/code/idp && git log --oneline -3 && echo '---' && git diff HEAD -- tests/test_local_claude_max_lane.py | head -5 && echo '---' && git show HEAD:tests/test_local_claude_max_lane.py | wc -l"

@@ -1,0 +1,6 @@
+name: graph-apply4
+description: Apply growmos ambient-os AGENTS.md chunk 0
+steps:
+  - name: apply
+    cmd: >
+      growmos --root ~/Documents/code/estate-graph apply extraction ~/Documents/code/estate-graph/.growmos/cache/extract_src_ca32f74ab34b_0.json --source src_ca32f74ab34b --chunk 0 --partial 2>&1

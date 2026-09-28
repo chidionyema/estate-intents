@@ -1,0 +1,7 @@
+name: ruff-check-pobr
+description: Run ruff check --select E9,F,B,S on PoBR files
+halt_on_failure: false
+steps:
+  - name: check
+    cmd: >
+      cd /Users/roseonyema/Documents/code/idp && python3 -m ruff check --select E9,F,B,S mcp/plugins/pobr_gate.py mcp/plugins/pobr_orchestrator.py mcp/plugins/pobr_schema.py 2>&1

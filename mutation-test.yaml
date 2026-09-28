@@ -1,0 +1,112 @@
+name: mutation-test
+description: >
+  Run polyglot mutation testing at a named tier. Picks the right tool per
+  language (mutmut for Python, cargo-mutants for Rust, stryker for JS/TS,
+  mewt for Go). Reuses cached results for unchanged files. Ledger at
+  ~/.estate/mutation-ledger.jsonl.
+
+  Tiers:
+    diff    — on-save, changed lines only, covered tests, 5s budget
+    commit  — pre-commit, staged files, full test suite, 60s budget
+    pr      — PR: diff vs base branch, 10min budget
+    full    — nightly: full codebase, sharded
+
+args:
+  tier:
+    type: string
+    required: true
+    description: >
+      Which tier to run: diff | commit | pr | full
+  base:
+    type: string
+    default: origin/main
+    description: Base branch for PR tier
+  files:
+    type: string
+    default: ""
+    description: >
+      Comma-separated file list. Omit to auto-detect from git.
+  cwd:
+    type: string
+    default: "."
+    description: Working directory (repo root)
+  shard:
+    type: string
+    default: ""
+    description: "Shard for full tier, e.g. 1/4"
+  install_tools:
+    type: boolean
+    default: false
+    description: Install missing mutation tools before running
+
+halt_on_failure: false
+
+steps:
+  - name: resolve-tier
+    description: >
+      Resolve tier and file list. diff uses --files or stdin. commit uses
+      git staged. pr uses git diff vs base. full uses git ls-files.
+    commands:
+      - |
+        TIER="{{tier}}"
+        CWD="{{cwd}}"
+        FILES="{{files}}"
+        BASE="{{base}}"
+        SHARD="{{shard}}"
+        ORCH="$HOME/.estate/bin/mutation-orchestrator"
+
+        # Sanitise
+        CWD=$(echo "$CWD" | sed 's/^["'\'']\+//;s/["'\'']\+$//')
+        TIER=$(echo "$TIER" | sed 's/^["'\'']\+//;s/["'\'']\+$//')
+
+        echo "=== mutation-test tier=$TIER cwd=$CWD ==="
+
+        # Build command
+        CMD="python3 $ORCH --tier=$TIER --cwd=$CWD"
+
+        if [ -n "$BASE" ] && [ "$BASE" != "origin/main" ]; then
+          CMD="$CMD --base=$BASE"
+        fi
+        if [ -n "$SHARD" ]; then
+          CMD="$CMD --shard=$SHARD"
+        fi
+        if [ -n "$FILES" ]; then
+          # convert comma-separated to space-separated
+          FILES=$(echo "$FILES" | tr ',' ' ')
+          CMD="$CMD --files $FILES"
+        fi
+
+        echo "Running: $CMD"
+        eval $CMD
+
+  - name: check-budget
+    description: >
+      Verify tier completed within its time budget. Fails if budget exceeded.
+    commands:
+      - |
+        LEDGER="$HOME/.estate/mutation-ledger.jsonl"
+        if [ -f "$LEDGER" ]; then
+          LAST=$(tail -1 "$LEDGER")
+          BUDGET_OK=$(echo "$LAST" | python3 -c \
+            "import sys,json; d=json.load(sys.stdin); print(d.get('budget_ok',False))" \
+            2>/dev/null)
+          ELAPSED=$(echo "$LAST" | python3 -c \
+            "import sys,json; d=json.load(sys.stdin); print(d.get('elapsed_s',0))" \
+            2>/dev/null)
+          TIER=$(echo "$LAST" | python3 -c \
+            "import sys,json; d=json.load(sys.stdin); print(d.get('tier',''))" \
+            2>/dev/null)
+          echo "tier=$TIER elapsed=${ELAPSED}s budget_ok=$BUDGET_OK"
+          if [ "$BUDGET_OK" = "False" ]; then
+            echo "ERROR: tier=$TIER exceeded its time budget (${ELAPSED}s)" >&2
+          fi
+        fi
+
+  - name: show-score
+    description: Print latest score from ledger
+    commands:
+      - |
+        LEDGER="$HOME/.estate/mutation-ledger.jsonl"
+        if [ -f "$LEDGER" ]; then
+          tail -1 "$LEDGER" | python3 -m json.tool
+        fi

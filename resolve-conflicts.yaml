@@ -1,0 +1,8 @@
+name: resolve-conflicts
+description: Resolve merge conflicts
+halt_on_failure: false
+steps:
+  - name: run
+    timeout: 180
+    cmd: >
+      python3 /Users/roseonyema/.estate/scripts/resolve-conflicts.py

@@ -1,0 +1,41 @@
+name: rsa-fleet-page-proof
+description: Render the panel from live backend data + verify the React shape
+class: read
+args: {}
+halt_on_failure: false
+timeout: 30
+steps:
+  - name: render
+    cmd: |
+      estate_invoke intent=pobr-gate 2>&1 | head -10
+      bash -c "      PROOF=/tmp/fleet-page-proof.txt
+      : > "$PROOF"
+      "
+      echo "================================================================" >> "$PROOF"
+      echo "/FLEET PAGE PROOF — $(date -u +%Y-%m-%dT%H:%M:%SZ)" >> "$PROOF"
+      echo "================================================================" >> "$PROOF"
+      echo "" >> "$PROOF"
+
+      echo "== 1. CONFIRM the backend on :4008 ==" >> "$PROOF"
+      HEAD=$(curl -s http://127.0.0.1:4008/rsa/status | head -c 100)
+      echo "$HEAD" >> "$PROOF"
+      echo "" >> "$PROOF"
+
+      echo "== 2. RENDER THE HTML FROM LIVE DATA ==" >> "$PROOF"
+      echo "(Python script reads /rsa/status and /rsa/drift-scan and renders" >> "$PROOF"
+      echo "the SAME layout as rsa.tsx)" >> "$PROOF"
+      PROM_URL=http://127.0.0.1:9090 python3 /Users/roseonyema/Documents/code/idp/platform/rsa/scripts/render_panel.py 2>&1 >> "$PROOF"
+      echo "" >> "$PROOF"
+
+      echo "== 3. FILE SIZES ==" >> "$PROOF"
+      wc -l /tmp/fleet-rsa-*.html >> "$PROOF"
+      echo "" >> "$PROOF"
+
+      echo "== 4. PREVIEW OF THE PANEL (status panel, in-browser layout) ==" >> "$PROOF"
+      cat /tmp/fleet-rsa-panel.html >> "$PROOF"
+      echo "" >> "$PROOF"
+      echo "== 5. PREVIEW OF THE DRIFT PANEL ==" >> "$PROOF"
+      cat /tmp/fleet-rsa-drift.html >> "$PROOF"
+
+      cat "$PROOF"
+    timeout: 15

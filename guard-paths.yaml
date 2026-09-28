@@ -1,0 +1,5 @@
+name: guard-paths
+description: Read guarded-paths workflow
+halt_on_failure: false
+steps:
+  - cmd: "cd /Users/roseonyema/Documents/code/idp && git show origin/main:.github/workflows/guarded-paths.yml 2>/dev/null | head -60 || echo 'not on main'"

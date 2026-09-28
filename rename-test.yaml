@@ -1,0 +1,5 @@
+name: rename-test
+description: Rename test to support module
+halt_on_failure: false
+steps:
+  - cmd: "cd /Users/roseonyema/Documents/code/idp && git mv tests/test_local_claude_max_lane.py tests/local_claude_max_lane_check.py && git status --short"

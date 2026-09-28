@@ -1,0 +1,29 @@
+name: executor-find-plist
+description: Find the executor plist.
+
+steps:
+  - name: find
+    cmd: |
+      estate_invoke intent=pobr-gate 2>&1 | head -10
+      bash -c "      python3 - <<'PYEOF'
+      import subprocess
+      from pathlib import Path
+
+      home = Path.home()
+      # Check common plist locations
+      locations = [
+          home / "Library" / "LaunchAgents" / "com.idp.executor.plist",
+          home / "Library" / "LaunchDaemons" / "com.idp.executor.plist",
+      ]
+      for loc in locations:
+          if loc.exists():
+              print(f"Found: {loc}")
+              print(loc.read_text()[:500])
+          else:
+              print(f"Missing: {loc}")
+
+      # Also check what process 3554 is (from estate_executor_status)
+      r = subprocess.run(["ps", "-p", "3554", "-o", "pid,ppid,command"],
+                       capture_output=True, text=True)
+      print(f"\nProcess 3554:\n  {r.stdout}")
+      PYEOF

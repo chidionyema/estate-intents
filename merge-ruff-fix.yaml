@@ -1,0 +1,8 @@
+name: merge-ruff-fix
+description: Merge ruff fix into feat/pobr
+halt_on_failure: false
+steps:
+  - name: run
+    timeout: 300
+    cmd: >
+      python3 /Users/roseonyema/.estate/scripts/merge-ruff-fix.py

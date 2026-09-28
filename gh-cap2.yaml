@@ -1,0 +1,7 @@
+name: gh-cap2
+description: Get cap job details
+halt_on_failure: false
+steps:
+  - name: run
+    cmd: >
+      python3 /Users/roseonyema/.estate/scripts/gh-cap2.py

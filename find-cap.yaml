@@ -1,0 +1,7 @@
+name: find-cap
+description: Find cap workflow
+halt_on_failure: false
+steps:
+  - name: run
+    cmd: >
+      python3 /Users/roseonyema/.estate/scripts/find-cap.py

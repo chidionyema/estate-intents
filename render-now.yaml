@@ -1,0 +1,23 @@
+name: render-now
+description: Install jsdom and use the act+wait approach to render real React component with settled state
+class: read
+args: {}
+halt_on_failure: false
+timeout: 180
+steps:
+  - name: install
+    cmd: |
+      estate_invoke intent=pobr-gate 2>&1 | head -10
+      bash -c "      cd /tmp/rsa-render
+      npm install --legacy-peer-deps --no-audit --no-fund jsdom 2>&1 | tail -3
+      "
+      ls node_modules/jsdom 2>&1 | head -3
+    timeout: 120
+  - name: render
+    cmd: |
+      PROOF=/tmp/render-out.txt
+      : > "$PROOF"
+      cd /tmp/rsa-render
+      ./node_modules/.bin/tsx ./render-jsdom.cts.mjs 2>&1 | tee "$PROOF" | head -300
+      cat "$PROOF"
+    timeout: 60

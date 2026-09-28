@@ -1,0 +1,10 @@
+name: merge-gate-to-main
+description: Get mutation-pr-gate.yml onto main so it registers as a PR check
+halt_on_failure: false
+steps:
+  - cmd: cd /Users/roseonyema/Documents/code/idp && git checkout main && git pull origin main
+  - cmd: cd /Users/roseonyema/Documents/code/idp && git checkout -b add/mutation-pr-gate
+  - cmd: cd /Users/roseonyema/Documents/code/idp && cp .github/workflows/mutation-pr-gate.yml .github/workflows/mutation-pr-gate.yml
+  - cmd: cd /Users/roseonyema/Documents/code/idp && git add .github/workflows/mutation-pr-gate.yml && git commit -m "ci: add mutation-pr-gate workflow"
+  - cmd: cd /Users/roseonyema/Documents/code/idp && git push origin add/mutation-pr-gate
+  - cmd: cd /Users/roseonyema/Documents/code/idp && gh pr create --title "ci: mutation PR gate" --body "Adds mutation testing PR gate workflow." --base main --head add/mutation-pr-gate

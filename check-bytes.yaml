@@ -1,0 +1,5 @@
+name: check-bytes
+description: Check file encoding
+halt_on_failure: false
+steps:
+  - cmd: "cd /Users/roseonyema/Documents/code/idp && git show origin/main:.github/workflows/mutation-nightly.yml > /tmp/nightly.yml && python3 -c \"\nwith open('/tmp/nightly.yml','rb') as f:\n    data = f.read()\n# Check for BOM, weird chars around line 84\nlines = data.split(b'\\n')\nfor i in [82,83,84]:\n    print(f'{i+1}: {lines[i][:80]}')\nprint('Encoding:', 'UTF-8' if data[:3] != b'\\\\xef\\\\xbb\\\\xbf' else 'UTF-8-BOM')\n# Now try yaml with universal newlines\nimport yaml\nwith open('/tmp/nightly.yml', 'r', encoding='utf-8') as f:\n    try:\n        yaml.safe_load(f)\n        print('YAML OK')\n    except Exception as e:\n        print('YAML FAIL:', e)\n\" 2>&1"

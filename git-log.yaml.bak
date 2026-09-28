@@ -1,0 +1,14 @@
+name: git-log
+description: >
+  Composite intent. Recent commits on a branch or range.
+args:
+  branch:  {type: string, default: "HEAD"}
+  count:   {type: int, default: 10}
+  since:   {type: string, default: ""}
+  path:    {type: string, default: ""}
+steps:
+  - name: log
+    cmd: >
+      git --no-pager log --oneline --decorate
+      {{if(since,'--since=' + since,'')}} {{if(path,'-- ' + path,'')}}
+      -{{count}} {{branch}} 2>/dev/null

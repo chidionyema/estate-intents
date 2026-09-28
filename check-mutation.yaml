@@ -1,0 +1,8 @@
+name: check-mutation
+description: Check mutation workflow and push
+halt_on_failure: false
+steps:
+  - name: run
+    timeout: 180
+    cmd: >
+      python3 /Users/roseonyema/.estate/scripts/check-mutation.py

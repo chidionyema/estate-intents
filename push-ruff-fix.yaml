@@ -1,0 +1,10 @@
+name: push-ruff-fix
+description: Commit and push the ruff-format + noqa fixes
+halt_on_failure: false
+steps:
+  - name: add-commit
+    cmd: >
+      cd /Users/roseonyema/Documents/code/idp && git add mcp/plugins/estate_mcp.py mcp/plugins/pobr_grant.py platform/executor/daemon.py && git commit -m "fix: ruff format + noqa S602 for daemon.py probe" && echo "committed"
+  - name: push
+    cmd: >
+      cd /Users/roseonyema/Documents/code/idp && git push origin feat/pobr 2>&1

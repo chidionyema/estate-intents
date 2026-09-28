@@ -1,0 +1,718 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>LiteLLM Router — 360° Complete Map</title>
+<style>
+  :root {
+    --bg: #0d1117;
+    --surface: #161b22;
+    --border: #30363d;
+    --text: #e6edf3;
+    --muted: #8b949e;
+    --accent: #58a6ff;
+    --green: #3fb950;
+    --yellow: #d29922;
+    --red: #f85149;
+    --purple: #a371f7;
+    --code-bg: #1c2128;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    line-height: 1.6;
+    font-size: 14px;
+  }
+  .toc {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 280px;
+    height: 100vh;
+    overflow-y: auto;
+    background: var(--surface);
+    border-right: 1px solid var(--border);
+    padding: 20px;
+    z-index: 100;
+  }
+  .toc h2 {
+    color: var(--muted);
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    margin-bottom: 16px;
+    font-weight: 600;
+  }
+  .toc a {
+    display: block;
+    color: var(--muted);
+    text-decoration: none;
+    padding: 6px 0;
+    font-size: 13px;
+    transition: color 0.15s;
+  }
+  .toc a:hover { color: var(--accent); }
+  .toc a.active { color: var(--accent); }
+  .main {
+    margin-left: 280px;
+    padding: 40px 60px;
+    max-width: 900px;
+  }
+  h1 {
+    font-size: 28px;
+    font-weight: 700;
+    margin-bottom: 8px;
+    color: var(--text);
+  }
+  .subtitle {
+    color: var(--muted);
+    font-size: 14px;
+    margin-bottom: 40px;
+    padding-bottom: 20px;
+    border-bottom: 1px solid var(--border);
+  }
+  h2 {
+    font-size: 20px;
+    font-weight: 600;
+    color: var(--text);
+    margin: 40px 0 16px;
+    padding-top: 20px;
+    border-top: 1px solid var(--border);
+  }
+  h2:first-of-type { border-top: none; margin-top: 0; }
+  h3 {
+    font-size: 15px;
+    font-weight: 600;
+    color: var(--text);
+    margin: 24px 0 12px;
+  }
+  p { margin-bottom: 12px; color: var(--text); }
+  ul, ol { margin: 12px 0 12px 24px; }
+  li { margin-bottom: 6px; }
+  code {
+    background: var(--code-bg);
+    color: var(--green);
+    padding: 2px 6px;
+    border-radius: 4px;
+    font-size: 12px;
+    font-family: 'SF Mono', Monaco, Consolas, monospace;
+  }
+  pre {
+    background: var(--code-bg);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 16px;
+    margin: 16px 0;
+    overflow-x: auto;
+  }
+  pre code {
+    background: none;
+    padding: 0;
+    color: var(--text);
+    font-size: 13px;
+  }
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 16px 0;
+    font-size: 13px;
+  }
+  th {
+    text-align: left;
+    padding: 10px 12px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    color: var(--muted);
+    font-weight: 600;
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+  td {
+    padding: 10px 12px;
+    border: 1px solid var(--border);
+    vertical-align: top;
+  }
+  tr:nth-child(even) td { background: rgba(255,255,255,0.02); }
+  .badge {
+    display: inline-block;
+    padding: 2px 8px;
+    border-radius: 12px;
+    font-size: 11px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+  .badge-green { background: rgba(63,185,80,0.15); color: var(--green); }
+  .badge-yellow { background: rgba(210,153,34,0.15); color: var(--yellow); }
+  .badge-red { background: rgba(248,81,73,0.15); color: var(--red); }
+  .badge-purple { background: rgba(163,113,247,0.15); color: var(--purple); }
+  .badge-blue { background: rgba(88,166,255,0.15); color: var(--accent); }
+  .flow {
+    background: var(--code-bg);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 16px;
+    margin: 16px 0;
+    font-family: 'SF Mono', Monaco, Consolas, monospace;
+    font-size: 12px;
+    line-height: 1.8;
+    white-space: pre;
+    overflow-x: auto;
+  }
+  .note {
+    background: rgba(210,153,34,0.1);
+    border: 1px solid rgba(210,153,34,0.3);
+    border-radius: 6px;
+    padding: 12px 16px;
+    margin: 16px 0;
+    font-size: 13px;
+  }
+  .note strong { color: var(--yellow); }
+  .cmd {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    background: var(--code-bg);
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    padding: 8px 12px;
+    margin: 8px 0;
+    font-family: 'SF Mono', Monaco, Consolas, monospace;
+    font-size: 12px;
+  }
+  .cmd::before { content: '$'; color: var(--green); }
+  .cmd code { background: none; padding: 0; color: var(--text); }
+  .lane-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 12px;
+    margin: 16px 0;
+  }
+  .lane-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 12px;
+  }
+  .lane-card h4 {
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--accent);
+    margin-bottom: 8px;
+  }
+  .lane-card .detail {
+    font-size: 12px;
+    color: var(--muted);
+    margin-bottom: 4px;
+  }
+  .lane-card .detail span { color: var(--text); }
+  .arrow { color: var(--accent); margin: 0 4px; }
+  @media (max-width: 900px) {
+    .toc { display: none; }
+    .main { margin-left: 0; padding: 20px; }
+  }
+</style>
+</head>
+<body>
+
+<nav class="toc">
+  <h2>Router Map</h2>
+  <a href="#what">What This Is</a>
+  <a href="#entry">Entry Points</a>
+  <a href="#auth">Auth Model</a>
+  <a href="#lanes">Model Lanes</a>
+  <a href="#fallbacks">Fallback Chains</a>
+  <a href="#callbacks">Callback Chain</a>
+  <a href="#bug">x-api-key Bug</a>
+  <a href="#secrets">Secret Management</a>
+  <a href="#audit">Audit & Logging</a>
+  <a href="#platform">Platform Relations</a>
+  <a href="#startup">Startup & Lifecycle</a>
+  <a href="#config">Configuration</a>
+  <a href="#env">Environment</a>
+  <a href="#diagnose">Diagnosis Guide</a>
+</nav>
+
+<div class="main">
+
+# Litellm Router — 360° Complete Map
+
+## What This Is
+
+The router is the estate's LLM proxy. Every AI call from every consumer passes through it.
+It is the single chokepoint for:
+
+- **Route selection** — which model handles the request
+- **Cost control** — token efficiency + per-request ceilings
+- **Auth enforcement** — who can call which lane
+- **Audit** — every call logged with model, latency, tokens, cost
+- **Telemetry** — OTel traces to the collector
+
+There are **two routers**:
+
+| Router | Location | Purpose |
+|--------|----------|---------|
+| Laptop | `~/.estate/litellm-local/` | Local macOS, no cluster dependency |
+| Cluster | `llm.mumchimp.com` | Kubernetes, fleet-wide |
+
+The laptop router runs Claude Code's traffic so the founder's Max subscription works even when the cluster is down.
+
+---
+
+## Entry Points
+
+### Laptop Router: `http://127.0.0.1:4000`
+
+| Caller | Auth Method | Lanes Used |
+|--------|-------------|------------|
+| Claude Code | `sk-ant-oat01-...` OAuth token | `claude-*` |
+| Voice pipeline | Groq API key (router holds) | `voice-asr`, `voice-tts` |
+| Agent workforce | Per-vendor keys | `default`, `fast`, `groq`, etc. |
+
+**Configuration**: `~/.claude/settings.json` → `ANTHROPIC_BASE_URL=http://127.0.0.1:4000`
+
+### Cluster Router: `https://llm.mumchimp.com`
+
+| Caller | Auth Method |
+|--------|-------------|
+| Otto gateway | Master key / virtual keys |
+| Prospector | Master key |
+| Holmes | Master key |
+| Any cluster service | Master key |
+
+---
+
+## The Auth Model
+
+### Laptop Router: `local_caller_auth.py`
+
+Runs as a LiteLLM `custom_auth` callback — **before every other callback**.
+
+<div class="flow">Request
+  ↓
+local_caller_auth.py
+  ├─ Browser check: Origin header? → REFUSE
+  │                         Wrong Host? → REFUSE
+  │
+  ├─ Keyed-lane check:
+  │   Lane has api_key: os.environ/...?
+  │     ├─ YES: Must present LITELLM_LAPTOP_KEY → ALLOW
+  │     └─ NO (claude-*, ollama-*): Any caller → ALLOW
+  │
+  ↓
+Next callback</div>
+
+| Check | Refuses | Why |
+|-------|---------|-----|
+| Browser | `Origin` header present | Web pages can't spend vendor keys |
+| Browser | `Host != 127.0.0.1:4000` | DNS rebinding protection |
+| Keyed lane | No laptop router key | Only local services can use Groq/Cerebras |
+
+<div class="note">
+**HOST MISMATCH BUG**: If something occupies port 4000, the router binds 5606.
+`local_caller_auth` sees `Host: 127.0.0.1:5606` and refuses all requests.
+Fix: <code>kill $(lsof -t -i:4000)</code> then restart router.
+</div>
+
+### Cluster Router
+
+Uses `LITELLM_MASTER_KEY` for authentication. Virtual keys for named consumers.
+
+---
+
+## Model Lanes
+
+### Claude Code Lanes
+
+<div class="lane-card">
+<h4>claude-* (wildcard)</h4>
+<div class="detail">model: <span>anthropic/claude-*</span></div>
+<div class="detail">auth: <span class="badge badge-green">NO KEY</span> — relays client's OAuth token</div>
+<div class="detail">timeout: <span>600s</span></div>
+<div class="detail">cost: <span class="badge badge-green">$0</span> — Max subscription</div>
+<div class="detail">fallback: <span>none</span></div>
+</div>
+
+The wildcard carries whatever model ID Claude Code sends (`claude-opus-5-5`, `claude-haiku-4-5-20251001`, etc.).
+
+### General-Purpose Lanes
+
+<div class="lane-grid">
+<div class="lane-card">
+<h4>default</h4>
+<div class="detail">pool: <span>MiniMax + Groq + Cerebras + SambaNova</span></div>
+<div class="detail">timeout: <span>300s</span></div>
+<div class="detail">max tokens: <span>512,000</span></div>
+</div>
+<div class="lane-card">
+<h4>fast</h4>
+<div class="detail">pool: <span>MiniMax + Groq + Cerebras + SambaNova</span></div>
+<div class="detail">timeout: <span>300s</span></div>
+<div class="detail">max tokens: <span>512,000</span></div>
+</div>
+</div>
+
+### Direct Vendor Lanes
+
+| Lane | Model | Key | Timeout | Fallback |
+|------|-------|-----|---------|----------|
+| `minimax` | MiniMax-M3 | `MINIMAX_API_KEY` | 300s | `gemini → groq` |
+| `minimax_m27` | MiniMax-M2.7 | `MINIMAX_API_KEY` | 300s | `gemini → groq` |
+| `minimax_json` | MiniMax-M3 (JSON) | `MINIMAX_API_KEY` | 300s | `gemini → groq` |
+| `gemini` | Gemini 2.5 Flash | `GEMINI_API_KEY` | 300s | `minimax → groq` |
+| `deepseek` | DeepSeek V4 | `DEEPSEEK_API_KEY` | 300s | `gemini → minimax → groq` |
+
+### Free Floor Lanes
+
+<div class="lane-grid">
+<div class="lane-card">
+<h4>groq</h4>
+<div class="detail">model: <span>GPT-OSS 120B</span></div>
+<div class="detail">keys: <span>3-key pool</span></div>
+<div class="detail">timeout: <span>60s</span></div>
+<div class="detail">max tokens: <span>131,072</span></div>
+<div class="detail">fallback: <span>cerebras → sambanova → nvidia → openrouter</span></div>
+</div>
+<div class="lane-card">
+<h4>cerebras</h4>
+<div class="detail">model: <span>GPT-OSS 120B</span></div>
+<div class="detail">keys: <span>3-key pool</span></div>
+<div class="detail">timeout: <span>60s</span></div>
+<div class="detail">max tokens: <span>65,536</span></div>
+</div>
+<div class="lane-card">
+<h4>sambanova</h4>
+<div class="detail">model: <span>GPT-OSS 120B</span></div>
+<div class="detail">keys: <span>3-key pool</span></div>
+<div class="detail">timeout: <span>60s</span></div>
+<div class="detail">max tokens: <span>131,072</span></div>
+</div>
+<div class="lane-card">
+<h4>nvidia</h4>
+<div class="detail">model: <span>Nemotron 3.5 Lightning</span></div>
+<div class="detail">timeout: <span>90s</span></div>
+<div class="detail">max tokens: <span>131,072</span></div>
+</div>
+</div>
+
+### Voice Lanes
+
+| Lane | Model | Mode | Timeout |
+|------|-------|------|---------|
+| `voice-asr` | Whisper Turbo | transcription | 20s |
+| `voice-tts` | Orpheus English | speech | 20s |
+
+### Local Lanes
+
+| Lane | Model | Timeout |
+|------|-------|---------|
+| `ollama` | Qwen2.5-Coder 7B | 300s |
+| `ollama-vision` | Gemma 3 4B | 300s |
+| `ollama-llama` | Llama 3.2 | 300s |
+
+---
+
+## Fallback Chains
+
+<div class="flow">deepseek <span class="arrow">→</span> gemini <span class="arrow">→</span> minimax <span class="arrow">→</span> groq
+minimax <span class="arrow">→</span> gemini <span class="arrow">→</span> groq
+gemini <span class="arrow">→</span> minimax <span class="arrow">→</span> groq
+default <span class="arrow">→</span> gemini <span class="arrow">→</span> groq
+fast <span class="arrow">→</span> gemini <span class="arrow">→</span> groq
+
+groq <span class="arrow">→</span> cerebras <span class="arrow">→</span> sambanova <span class="arrow">→</span> nvidia <span class="arrow">→</span> openrouter
+cerebras <span class="arrow">→</span> sambanova <span class="arrow">→</span> nvidia <span class="arrow">→</span> openrouter
+sambanova <span class="arrow">→</span> nvidia <span class="arrow">→</span> openrouter</div>
+
+| Property | Value |
+|----------|-------|
+| Pool routing | `cost-based-routing` — cheapest healthy member |
+| Circuit breaker | 3 allowed fails, 60s cooldown |
+| Gemini position | LAST on every chain — returns when billed |
+| Self-healing | Dead key cools 60s, rejoins automatically |
+
+---
+
+## Callback Chain
+
+### 1. `local_caller_auth.py` — Auth Gate
+
+<span class="badge badge-purple">custom_auth</span> <span class="badge badge-red">runs first</span>
+
+- Refuses browser requests
+- Enforces laptop key on keyed lanes
+- Tags callers: `LOCAL_SERVICE` vs `OWN_CREDENTIAL`
+
+### 2. `request_ceiling.py` — Size Gate
+
+<span class="badge badge-yellow">pre-call hook</span>
+
+**Refuses requests > 128k input tokens** before they cost money.
+
+<div class="note">
+<strong>Why this exists:</strong> Measured 2026-09-13, one session sent 737k tokens × 439 calls in one hour.
+The hourly spend gate graded total spend, not per-call size — it didn't fire.
+</div>
+
+### 3. `efficiency_gateway.py` — 9 Token Mechanisms
+
+<span class="badge badge-yellow">pre-call hook</span>
+
+**OpenAI lanes** (MiniMax, Groq, etc.):
+
+| # | Mechanism | What it does |
+|---|-----------|---------------|
+| 1 | CacheGuardian | Detects system-prompt drift |
+| 2 | TokenKiller | Deduplicates identical tool result lines |
+| 3 | MCPAdapter | Truncates tool descriptions to 400 chars |
+| 4 | TokenBudgetOrchestrator | Tracks cumulative spend per session |
+| 5 | SoLPi | Replaces repeated large results with pointer |
+| 6 | DynamicContextPruning | Removes duplicate tool results |
+| 7 | CompactionManager | Bounds history to 60 messages |
+| 8 | GistingSimulator | Condenses old assistant turns |
+| 9 | ToolPairValidator | Drops orphaned tool messages |
+
+**Anthropic lane** (`claude-*`): All mechanisms are **APPEND-STABLE** — turn n+1 re-sends byte-identical bytes for everything turn n cached.
+
+### 4. `anthropic_beta_passthrough.py` — Header Fix
+
+<span class="badge badge-purple">module-level</span>
+
+Fixes two LiteLLM bugs on Anthropic provider:
+
+1. **Beta headers** — LiteLLM allow-lists from BerriAI's GitHub, Claude Code ships newer betas
+2. **Request fields** — LiteLLM drops `safeguards`, breaking Claude Code's safety classifier
+
+### 5. `otel` — Telemetry
+
+<span class="badge badge-blue">OpenTelemetry</span>
+
+Traces: model, latency, tokens, cost. **No content** (`turn_off_message_logging: true`).
+
+---
+
+## The x-api-key Bug and Fix
+
+### The Problem
+
+<div class="flow">Claude Code
+  <span class="arrow">→</span>
+local_caller_auth.py (enabled)
+  <span class="arrow">→</span>
+LiteLLM (custom auth active)
+  <span class="arrow">→</span>
+<span style="color: var(--red)">DROPS x-api-key header</span>
+  <span class="arrow">→</span>
+Anthropic ← EMPTY x-api-key
+  <span class="arrow">→</span>
+<span class="badge badge-red">401 missing authentication</span></div>
+
+### The Fix
+
+`llm/config.yaml` → `litellm_settings`:
+<pre><code>pass_through_client_api_key: true</code></pre>
+
+<span class="badge badge-green">CONFIRMED PRESENT</span> in `llm/config.yaml`
+
+### After the Fix
+
+<div class="flow">Claude Code (sk-ant-oat01-... OAuth token)
+  <span class="arrow">→</span>
+local_caller_auth.py (passes)
+  <span class="arrow">→</span>
+LiteLLM
+  <span class="arrow">→</span>
+pass_through_client_api_key: true
+  <span class="arrow">→</span>
+<span class="badge badge-green">x-api-key FORWARDED to Anthropic</span>
+  <span class="arrow">→</span>
+Anthropic accepts Max OAuth → 200 OK</div>
+
+---
+
+## Secret Management
+
+### Keys the Laptop Router Holds
+
+| Key | Purpose | Source |
+|-----|---------|--------|
+| `MINIMAX_API_KEY` | MiniMax lanes | SOPS/age |
+| `GROQ_API_KEY` (+2) | Groq pool + voice | SOPS/age |
+| `CEREBRAS_API_KEY` (+2) | Cerebras pool | SOPS/age |
+| `SAMBANOVA_API_KEY` (+2) | SambaNova pool | SOPS/age |
+| `GEMINI_API_KEY` | Gemini lane | SOPS/age |
+| `DEEPSEEK_API_KEY` | DeepSeek lane | SOPS/age |
+| `NVIDIA_API_KEY` | NVIDIA lane | SOPS/age |
+| `OPENROUTER_API_KEY` | OpenRouter floor | SOPS/age |
+| `LITELLM_LAPTOP_KEY` | Caller auth | SOPS/age |
+
+### Keys the Laptop Router Does NOT Hold
+
+| Key | Why |
+|-----|-----|
+| `ANTHROPIC_API_KEY` | **unset by design** — Claude Code's OAuth token pays |
+| `LITELLM_MASTER_KEY` | **unset by design** — `local_caller_auth` handles auth |
+
+### Key Filtering at Startup
+
+`litellm-local` generates `config.runtime.yaml` at startup:
+- Drops lanes with missing API keys
+- Adds `custom_auth: local_caller_auth.user_api_key_auth`
+- Prepends `local_caller_auth.proxy_handler_instance` to callbacks
+
+---
+
+## Audit and Logging
+
+### Efficiency Ledger
+
+**Path**: `~/.estate/efficiency-ledger.jsonl`
+
+Two row types per call:
+
+**`pre` row** — what the router did:
+<pre><code>{
+  "v": 2,
+  "kind": "pre",
+  "mode": "openai | anthropic",
+  "call_id": "...",
+  "session": "...",
+  "at": "2026-09-27T...",
+  "model": "minimax",
+  "bytes_before": 45000,
+  "bytes_after": 32000,
+  "bytes_saved": 13000,
+  "steps": {"m2": {...}, "m5": {...}}
+}</code></pre>
+
+**`outcome` row** — what Anthropic billed:
+<pre><code>{
+  "v": 2,
+  "kind": "outcome",
+  "ok": true,
+  "usage": {
+    "prompt_tokens": 8000,
+    "cache_read": 6000,
+    "cache_write_5m": 1000,
+    "output_tokens": 500,
+    "input_equiv_billed": 6600,
+    "cache_hit_pct": 75.0
+  }
+}</code></pre>
+
+### Access Log
+
+Every refused request logged:
+<pre><code>REFUSED browser origin 'https://evil.com' on /v1/chat/completions
+REFUSED host '127.0.0.1:5606' is not the router's loopback address
+REFUSED keyed lane groq without the local caller key</code></pre>
+
+---
+
+## Platform Relationships
+
+| System | Relationship |
+|--------|--------------|
+| **Claude Code** | Explicitly routed to laptop router via `settings.json` |
+| **Prospector** | Reads `llm/config.yaml` for lane names |
+| **Otto Gateway** | Customer-facing API, has own free floor |
+| **Voice Pipeline** | Uses `voice-asr` + `voice-tts` lanes |
+| **Fleet Reactor** | Claude Code → laptop router → efficiency gateway |
+| **Agent Workforce** | All LLM calls → router → token ceilings |
+
+---
+
+## Startup and Lifecycle
+
+### Install
+
+<div class="cmd"><code>~/.estate/litellm-local/litellm-local install</code></div>
+
+1. Copy launcher + config + modules to `~/.estate/litellm-local/`
+2. Decrypt vendor keys (SOPS/age) into `secrets/`
+3. Decrypt `LITELLM_LAPTOP_KEY` into `caller/`
+4. Generate `config.runtime.yaml`
+5. Register `com.estate.litellm-local` with launchd
+6. Wait 90s for `/health/liveliness` — **fail hard if not live**
+
+### Why Staged Outside `~/Documents`
+
+launchd agents cannot read `~/Documents` (macOS TCC restriction).
+`install` copies to `~/.estate/litellm-local/`, launchd runs from there.
+
+### Commands
+
+<div class="cmd"><code>~/.estate/litellm-local/litellm-local status</code></div>
+<div class="cmd"><code>~/.estate/litellm-local/litellm-local uninstall</code></div>
+<div class="cmd"><code>curl http://127.0.0.1:4000/health/liveliness</code></div>
+<div class="cmd"><code>tail -f ~/Library/Logs/litellm-local.log</code></div>
+
+---
+
+## Configuration Files
+
+| File | Purpose |
+|------|---------|
+| `llm/config.yaml` | **Source of truth** — edit here |
+| `llm/config.base.yaml` | Base config |
+| `platform/vendors/consoles.yaml` | Vendor lane declarations |
+| `bin/idp-vendor-render` | Renders config from base + consoles |
+| `platform/llm/local_caller_auth.py` | Auth (cluster version) |
+| `platform/llm/efficiency_gateway.py` | Token optimization |
+| `platform/llm/request_ceiling.py` | Size gate |
+| `platform/llm/anthropic_beta_passthrough.py` | Anthropic header fix |
+| `~/.estate/litellm-local/` | Staged laptop router |
+
+---
+
+## Environment Variables
+
+| Variable | Default | Purpose |
+|----------|---------|---------|
+| `ANTHROPIC_API_KEY` | **unset** | Claude Code uses OAuth |
+| `LITELLM_MASTER_KEY` | **unset** | local_caller_auth instead |
+| `ESTATE_MAX_INPUT_TOKENS` | `128000` | Request size ceiling |
+| `ESTATE_MAX_HISTORY_MSGS` | `60` | Compaction limit |
+| `ESTATE_MAX_TOOL_DESC_CHARS` | `400` | MCPAdapter limit |
+| `ESTATE_EFFICIENCY_LEDGER` | `~/.estate/efficiency-ledger.jsonl` | Audit log |
+| `ESTATE_ROUTER_HOSTS` | `127.0.0.1:4000,localhost:4000` | Allowed Hosts |
+| `OTEL_EXPORTER_OTLP_ENDPOINT` | `http://127.0.0.1:4318` | Telemetry collector |
+
+---
+
+## Diagnosis Guide
+
+### Router not responding
+
+<div class="cmd"><code>lsof -i :4000</code></div>
+<div class="cmd"><code>~/.estate/litellm-local/litellm-local status</code></div>
+<div class="cmd"><code>curl http://127.0.0.1:4000/health/liveliness</code></div>
+
+### Auth failures (401 from router)
+
+1. Router not started → install
+2. Wrong port → router on 5606, kill squatter, restart
+3. Missing laptop key → check `caller/LITELLM_LAPTOP_KEY.yaml`
+
+### Anthropic auth failures (401)
+
+1. Check `llm/config.yaml` has `pass_through_client_api_key: true`
+2. Reinstall router: <code>~/.estate/litellm-local/litellm-local install</code>
+
+### Token ceiling firing (400)
+
+1. Session context too large
+2. Fix: compaction, not retries
+3. Check ledger: <code>grep &lt;session_id&gt; ~/.estate/efficiency-ledger.jsonl</code>
+
+---
+
+*Map generated 2026-09-27. For real-time diagnosis use `k8s.debug` or `hypotheses.race`.*
+
+</div>
+</body>
+</html>

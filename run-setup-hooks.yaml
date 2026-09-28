@@ -1,0 +1,7 @@
+name: run-setup-hooks
+description: Run the hooks setup script
+args: {}
+halt_on_failure: false
+steps:
+  - name: setup
+    cmd: cd /Users/roseonyema/Documents/code/idp && ./hooks/setup-hooks.sh

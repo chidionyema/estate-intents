@@ -1,0 +1,8 @@
+name: inspect-conflicts
+description: Inspect conflict content
+halt_on_failure: false
+steps:
+  - name: run
+    timeout: 300
+    cmd: >
+      python3 /Users/roseonyema/.estate/scripts/inspect-conflicts.py

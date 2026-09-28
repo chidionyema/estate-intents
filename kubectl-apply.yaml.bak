@@ -1,0 +1,24 @@
+name: kubectl-apply
+description: Dry-run first, then apply. Pass manifest as stdin or file path.
+args:
+  manifest:  {type: string, description: "File path or '-' for stdin"}
+  namespace: {type: string, default: ""}
+  dry_run:   {type: bool, default: true}
+  server:    {type: bool, default: false}
+  validate:  {type: bool, default: true}
+  kubeconfig: {type: string, default: ""}
+steps:
+  - name: dry-run
+    cmd: >
+      KUBECONFIG={{kubeconfig}} kubectl --request-timeout=30s
+      -n {{namespace}} apply -f {{manifest}}
+      {{if(dry_run,if(server,'--dry-run=server', '--dry-run=client'),'')}}
+      {{if(validate,'--validate=true','--validate=false')}} 2>&1
+  - name: apply
+    cmd: >
+      if [ "{{dry_run}}" = "False" ]; then
+        KUBECONFIG={{kubeconfig}} kubectl --request-timeout=60s
+        -n {{namespace}} apply -f {{manifest}} 2>&1
+      else
+        echo "DRY RUN — set dry_run=false to apply"
+      fi

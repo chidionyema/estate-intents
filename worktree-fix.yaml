@@ -1,0 +1,54 @@
+name: worktree-fix
+description: Fix worktree and open PR.
+
+steps:
+  - name: fix
+    cmd: |
+      estate_invoke intent=pobr-gate 2>&1 | head -10
+      bash -c "      python3 - <<'PYEOF'
+      import subprocess, sys
+      from pathlib import Path
+
+      home = Path.home()
+      worktree = home / "Documents" / "code" / "worktrees" / "pobr"
+
+      # Check branch state
+      r = subprocess.run(
+          ["git", "branch", "--show-current"],
+          capture_output=True, text=True, timeout=5, cwd=str(worktree)
+      )
+      branch = r.stdout.strip()
+      print(f"Current branch: '{branch}'")
+
+      if not branch:
+          # Detached HEAD - checkout feat/pobr branch
+          print("Detached! Checking out feat/pobr...")
+          r2 = subprocess.run(
+              ["git", "checkout", "feat/pobr"],
+              capture_output=True, text=True, timeout=10, cwd=str(worktree)
+          )
+          print(r2.stdout.strip())
+          if r2.returncode != 0:
+              print(f"ERROR: {r2.stderr.strip()}")
+              sys.exit(1)
+
+      # Check if there are unpushed commits
+      r3 = subprocess.run(
+          ["git", "log", "--oneline", "@{upstream}..HEAD"],
+          capture_output=True, text=True, timeout=5, cwd=str(worktree)
+      )
+      if r3.stdout.strip():
+          print(f"Unpushed commits:\n{r3.stdout.strip()}")
+          # Push
+          r4 = subprocess.run(
+              ["git", "push", "origin", "feat/pobr"],
+              capture_output=True, text=True, timeout=30, cwd=str(worktree)
+          )
+          print(f"Push: rc={r4.returncode}")
+          if r4.returncode != 0:
+              print(f"Push error: {r4.stderr.strip()[:200]}")
+      else:
+          print("All commits pushed")
+
+      print("Done")
+      PYEOF

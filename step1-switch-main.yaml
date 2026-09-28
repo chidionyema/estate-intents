@@ -1,0 +1,5 @@
+name: step1-switch-main
+description: Switch to main and pull
+halt_on_failure: false
+steps:
+  - cmd: "cd /Users/roseonyema/Documents/code/idp && git checkout main && git pull origin main"

@@ -1,0 +1,5 @@
+name: check-executor-files
+description: Check executor files and daemon status
+steps:
+  - name: check
+    cmd: bash /tmp/check-executor.sh

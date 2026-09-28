@@ -1,0 +1,22 @@
+name: k8s-logs
+description: >
+  Composite intent. Tail logs from a pod (or all containers).
+  Use container= for a specific container.
+args:
+  pod:       {type: string}
+  namespace: {type: string, default: "default"}
+  container: {type: string, default: ""}
+  lines:    {type: int, default: 50}
+  since:    {type: string, default: ""}
+  previous: {type: bool, default: false}
+  kubeconfig: {type: string, default: ""}
+steps:
+  - name: logs
+    intent: kubectl-logs
+    args:
+      pod: "{{pod}}"
+      namespace: "{{namespace}}"
+      container: "{{container}}"
+      lines: "{{lines}}"
+      since: "{{since}}"
+      previous: "{{previous}}"

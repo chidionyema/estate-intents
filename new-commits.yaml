@@ -1,0 +1,7 @@
+name: new-commits
+description: Check new commits on feat/pobr
+halt_on_failure: false
+steps:
+  - name: run
+    cmd: >
+      python3 /Users/roseonyema/.estate/scripts/new-commits.py

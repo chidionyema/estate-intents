@@ -1,0 +1,12 @@
+name: rebase-executor
+description: Rebase estate_executor.py restoration onto latest origin/main and push
+steps:
+  - name: fetch
+    cmd: >
+      cd /Users/roseonyema/Documents/code/idp && git fetch origin main 2>&1
+  - name: rebase
+    cmd: >
+      cd /Users/roseonyema/Documents/code/idp && git rebase origin/main 2>&1
+  - name: push
+    cmd: >
+      cd /Users/roseonyema/Documents/code/idp && git push origin main 2>&1

@@ -1,0 +1,30 @@
+name: rsa-tmp-render-cleanup
+description: >
+  Remove the /tmp/rsa-render/ node workspace. Includes 101 node_modules
+  entries which makes rm slow — needs 30s.
+class: mutate
+args:
+  apply:
+    type: bool
+    default: false
+halt_on_failure: false
+timeout: 60
+steps:
+  - name: remove-render-workspace
+    cmd: |
+      estate_invoke intent=pobr-gate 2>&1 | head -10
+      bash -c "      rm -rf /tmp/rsa-render 2>&1
+      echo "rm exited $?"
+      "
+      echo
+      rm -f /tmp/fleet-rsa-drift.html /tmp/fleet-rsa-panel-actual.html \
+            /tmp/fleet-rsa-panel-drift.html /tmp/fleet-rsa-panel-status.html \
+            /tmp/fleet-rsa-panel.html /tmp/fleet-rsa-preview.html \
+            /tmp/rsa-end-to-end.txt /tmp/rsa-proof.txt
+      echo "deleted 8 output artifacts"
+      echo
+      echo "=== verify clean ==="
+      ls /tmp/rsa-render 2>&1 || echo "(verified: /tmp/rsa-render gone)"
+      echo
+      ls /tmp/ 2>&1 | grep -iE 'rsa|fleet-rsa' || echo "(verified: no rsa-* /tmp files)"
+    timeout: 60

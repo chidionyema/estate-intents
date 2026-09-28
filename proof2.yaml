@@ -1,0 +1,5 @@
+name: proof2
+description: Get failure reasons
+halt_on_failure: false
+steps:
+  - cmd: "cd /Users/roseonyema/Documents/code/idp && echo '=== NIGHTLY FAILURE ===' && gh run list --workflow mutation-nightly.yml -L 1 --json databaseId 2>/dev/null | python3 -c 'import json,sys; d=json.load(sys.stdin); print(d[0][\"databaseId\"] if d else \"none\")' | xargs -I{} gh api repos/chidionyema/idp/actions/runs/{}/jobs --jq '.jobs[0] | {name, conclusion}' && echo '=== PR GATE FAILURE ===' && gh run list --workflow mutation-pr-gate.yml -L 1 --json databaseId 2>/dev/null | python3 -c 'import json,sys; d=json.load(sys.stdin); print(d[0][\"databaseId\"] if d else \"none\")' | xargs -I{} gh api repos/chidionyema/idp/actions/runs/{}/jobs --jq '.jobs[0] | {name, conclusion}'"

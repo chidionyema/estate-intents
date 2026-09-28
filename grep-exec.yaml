@@ -1,0 +1,5 @@
+name: grep-exec
+description: Find executes-gate definition
+halt_on_failure: false
+steps:
+  - cmd: "cd /Users/roseonyema/Documents/code/idp && grep -n 'executes-gate' bin/idp-ci .github/workflows/*.yml 2>/dev/null | head -10"

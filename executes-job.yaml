@@ -1,0 +1,5 @@
+name: executes-job
+description: Read executes-gate job in ci.yml
+halt_on_failure: false
+steps:
+  - cmd: "cd /Users/roseonyema/Documents/code/idp && sed -n '475,510p' .github/workflows/ci.yml"

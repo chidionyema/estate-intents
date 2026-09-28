@@ -1,0 +1,7 @@
+name: check-orch
+description: Check orchestrator locations
+args: {}
+halt_on_failure: false
+steps:
+  - name: check
+    cmd: ls -la /Users/roseonyema/Documents/code/idp/.estate/bin/ 2>/dev/null || echo NO_REPO_ORCH; ls -la /Users/roseonyema/.estate/bin/mutation-orchestrator 2>/dev/null || echo NO_HOME_ORCH

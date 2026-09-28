@@ -1,0 +1,7 @@
+name: merge-gate-pr
+description: Merge PR 4738 and rebase feat/pobr
+halt_on_failure: false
+steps:
+  - cmd: "cd /Users/roseonyema/Documents/code/idp && gh pr merge 4738 --squash --delete-branch"
+  - cmd: "cd /Users/roseonyema/Documents/code/idp && git checkout feat/pobr && git fetch origin && git rebase origin/main"
+  - cmd: "cd /Users/roseonyema/Documents/code/idp && git push origin feat/pobr --force-with-lease"

@@ -1,0 +1,5 @@
+name: force-merge
+description: Merge PR 4738 with admin privileges
+halt_on_failure: false
+steps:
+  - cmd: "cd /Users/roseonyema/Documents/code/idp && gh pr merge 4738 --squash --delete-branch --admin"

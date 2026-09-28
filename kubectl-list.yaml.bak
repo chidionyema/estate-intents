@@ -1,0 +1,17 @@
+name: kubectl-list
+description: Thin kubectl get wrapper for listing resources.
+args:
+  resource:  {type: string}
+  namespace: {type: string, default: ""}
+  all_ns:    {type: bool, default: false}
+  label:     {type: string, default: ""}
+  field:     {type: string, default: ""}
+  output:    {type: string, default: "wide"}
+  kubeconfig: {type: string, default: ""}
+steps:
+  - name: list
+    cmd: >
+      KUBECONFIG={{kubeconfig}} kubectl --request-timeout=30s
+      -n {{namespace}} {{if(all_ns,'-A','')}} get {{resource}}
+      {{if(label,'-l ' + label,'')}} {{if(field,'--field-selector ' + field,'')}}
+      -o {{output}} 2>/dev/null

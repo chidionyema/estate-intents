@@ -1,0 +1,7 @@
+name: plan-work
+description: Categorize untracked files
+halt_on_failure: false
+steps:
+  - name: run
+    cmd: >
+      python3 /Users/roseonyema/.estate/scripts/plan-work.py

@@ -1,0 +1,27 @@
+name: open-pr
+description: Open PR from main repo.
+
+steps:
+  - name: pr
+    cmd: |
+      estate_invoke intent=pobr-gate 2>&1 | head -10
+      bash -c "      python3 - <<'PYEOF'
+      import subprocess
+      from pathlib import Path
+
+      body = Path("/tmp/pr-body.txt").read_text()
+
+      r = subprocess.run(
+          ["gh", "pr", "create",
+           "--title", "feat(executor): self-healing keepalive + integrity guard",
+           "--body-file", "/tmp/pr-body.txt",
+           "--base", "main",
+           "--head", "feat/pobr"],
+          capture_output=True, text=True, timeout=30,
+          cwd=str(Path.home() / "Documents" / "code" / "idp")
+      )
+      print(r.stdout.strip())
+      if r.stderr.strip():
+          print("STDERR:", r.stderr.strip()[:300])
+      print(f"rc={r.returncode}")
+      PYEOF

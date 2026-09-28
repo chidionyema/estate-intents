@@ -1,0 +1,5 @@
+name: search-text
+description: Search for the exact text
+halt_on_failure: false
+steps:
+  - cmd: "cd /Users/roseonyema/Documents/code/idp && rg -l 'Update LiteLLM\\|model mapping\\|local router\\|upstream Anthropic' . 2>/dev/null | head -10"

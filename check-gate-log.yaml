@@ -1,0 +1,5 @@
+name: check-gate-log
+description: Check mutation-pr-gate failure
+halt_on_failure: false
+steps:
+  - cmd: "python3 /Users/roseonyema/.estate/intents/check-gate-log.py"

@@ -1,0 +1,16 @@
+name: push-rebase
+description: Fetch and rebase local commits on top of remote
+halt_on_failure: false
+steps:
+  - name: fetch
+    cmd: >
+      cd /Users/roseonyema/Documents/code/idp && git fetch origin feat/pobr 2>&1
+  - name: status
+    cmd: >
+      cd /Users/roseonyema/Documents/code/idp && git status --short -b
+  - name: log
+    cmd: >
+      cd /Users/roseonyema/Documents/code/idp && git log --oneline origin/feat/pobr..HEAD
+  - name: push
+    cmd: >
+      cd /Users/roseonyema/Documents/code/idp && git push origin feat/pobr 2>&1

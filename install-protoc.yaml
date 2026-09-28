@@ -1,0 +1,21 @@
+name: install-protoc
+description: >
+  Install Protocol Buffers compiler (protoc) via Homebrew.
+class: mutate
+args:
+  apply: {type: bool, default: false}
+halt_on_failure: true
+steps:
+  - name: check-brew
+    cmd: which brew
+    on_fail: halt
+  - name: install-protoc
+    cmd: |
+      estate_invoke intent=pobr-gate 2>&1 | head -10
+      bash -c "      if ! which protoc; then
+        brew install protobuf
+      "
+      else
+        echo "protoc already installed: $(protoc --version)"
+      fi
+    timeout: 300

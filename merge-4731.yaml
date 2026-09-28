@@ -1,0 +1,7 @@
+name: merge-4731
+description: Merge PR 4731
+halt_on_failure: false
+steps:
+  - name: merge
+    cmd: >
+      gh pr merge 4731 --repo chidionyema/idp --squash --delete-branch 2>&1

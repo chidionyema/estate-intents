@@ -1,0 +1,8 @@
+name: check-py-issues
+description: Check Python issues in diff
+halt_on_failure: false
+steps:
+  - name: run
+    timeout: 60
+    cmd: >
+      python3 /Users/roseonyema/.estate/scripts/check-py-issues.py

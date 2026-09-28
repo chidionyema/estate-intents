@@ -1,0 +1,5 @@
+name: pr-state
+description: Check PR state
+halt_on_failure: false
+steps:
+  - cmd: "cd /Users/roseonyema/Documents/code/idp && gh pr view 4731 --json state,title,mergedAt,mergeable,closedAt,labels --jq '.' 2>/dev/null"

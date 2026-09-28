@@ -1,0 +1,5 @@
+name: validate
+description: Validate fixed YAML files
+halt_on_failure: false
+steps:
+  - cmd: "cd /Users/roseonyema/Documents/code/idp && python3 /Users/roseonyema/.estate/intents/fix-pr-gate.sh && python3 /Users/roseonyema/.estate/intents/fix-nightly.sh && echo '---' && for f in .github/workflows/mutation-pr-gate.yml .github/workflows/mutation-nightly.yml; do python3 -c \"\nimport yaml\nwith open('$f') as f: yaml.safe_load(f)\nprint('$f: VALID YAML')\n\" || echo \"$f: INVALID\"; done"

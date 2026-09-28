@@ -1,0 +1,8 @@
+name: force-push2
+description: Force push after sign
+halt_on_failure: false
+steps:
+  - name: run
+    timeout: 240
+    cmd: >
+      python3 /Users/roseonyema/.estate/scripts/force-push2.py

@@ -1,0 +1,8 @@
+name: ci-failure-logs
+description: Get CI failure logs
+halt_on_failure: false
+steps:
+  - name: run
+    timeout: 60
+    cmd: >
+      python3 /Users/roseonyema/.estate/scripts/ci-failure-logs.py

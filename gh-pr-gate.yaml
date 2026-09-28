@@ -1,0 +1,7 @@
+name: gh-pr-gate
+description: Get pr gate script
+halt_on_failure: false
+steps:
+  - name: run
+    cmd: >
+      python3 /Users/roseonyema/.estate/scripts/gh-pr-gate.py

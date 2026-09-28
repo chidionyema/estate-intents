@@ -1,0 +1,5 @@
+name: ci-failures
+description: Get CI failure reasons
+halt_on_failure: false
+steps:
+  - cmd: "python3 /Users/roseonyema/.estate/intents/ci-failures.py"

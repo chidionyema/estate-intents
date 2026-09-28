@@ -1,0 +1,14 @@
+name: keyless-foundation
+description: >-
+  Is each part the keyless estate rests on both in main and running? Identity (SPIRE server,
+  agents, CSI, the macOS spire-agent, spire-key-broker), the JIT broker and its grants, External
+  Secrets with its Bitwarden provider and every ClusterSecretStore, the Tailscale operator, the
+  cluster LiteLLM image, and whether this Mac has a Secure Enclave. Read-only; names, states and
+  counts only, never a secret value. A pod that is not running prints its last events. Exit 1 when
+  a part is in main but not running, 2 BLIND when the cluster does not answer.
+args: {}
+halt_on_failure: true
+steps:
+  - name: keyless-foundation
+    cmd: >
+      bash ~/.estate/libexec/keyless-foundation.sh

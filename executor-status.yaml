@@ -1,0 +1,34 @@
+name: executor-status
+description: Check executor status.
+
+steps:
+  - name: check
+    cmd: |
+      estate_invoke intent=pobr-gate 2>&1 | head -10
+      bash -c "      python3 - <<'PYEOF'
+      import subprocess, sys
+      from pathlib import Path
+
+      home = Path.home()
+      sock = home / ".estate" / "executor.sock"
+
+      # Check socket
+      r = subprocess.run(["lsof", str(sock)], capture_output=True, text=True, timeout=5)
+      if r.stdout.strip():
+          print("Socket is open:", r.stdout.strip().split("\n")[0])
+      else:
+          print("Socket not open or not owned")
+
+      # Check worktree branch
+      r2 = subprocess.run(
+          ["git", "branch", "--show-current"],
+          capture_output=True, text=True, timeout=5, cwd=str(home / "Documents" / "code" / "worktrees" / "pobr")
+      )
+      print(f"Branch: {r2.stdout.strip() or '(detached)'}")
+
+      r3 = subprocess.run(
+          ["git", "rev-parse", "--abbrev-ref", "HEAD"],
+          capture_output=True, text=True, timeout=5, cwd=str(home / "Documents" / "code" / "worktrees" / "pobr")
+      )
+      print(f"HEAD ref: {r3.stdout.strip()}")
+      PYEOF

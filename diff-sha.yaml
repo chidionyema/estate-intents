@@ -1,0 +1,5 @@
+name: diff-sha
+description: Check diff-filter for PR HEAD
+halt_on_failure: false
+steps:
+  - cmd: "cd /Users/roseonyema/Documents/code/idp && git fetch origin main && SHA=d2f9b47eece13cf7ca1a6614058d431c70698cc3 && git diff --name-only --diff-filter=A origin/main $SHA -- tests/*.py | head -10 && echo '---modified---' && git diff --name-only --diff-filter=M origin/main $SHA -- tests/*.py | head -10"

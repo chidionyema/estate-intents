@@ -1,0 +1,17 @@
+name: backup-r2
+description: >-
+  The laptop's restic backup to Cloudflare R2. Dry run (default) reports the restic binary, the
+  LaunchAgent's program and last exit, the last log line, and whether the R2 credentials
+  (~/.config/estate/estate.env, key NAMES only) and repo password (~/.estate/restic/password) are
+  on this Mac. apply=true installs restic if missing, installs the job's scripts to ~/.estate/bin
+  (launchd cannot run from ~/Documents: TCC), points com.estate.restic-backup there, runs one
+  backup and proves it -- the latest snapshot in R2 must be under 26h old. Exit 2 BLIND when the
+  credentials are not on this Mac, 3 when the proof fails.
+class: mutate
+args:
+  apply: {type: bool, default: false}
+halt_on_failure: true
+steps:
+  - name: backup-r2
+    cmd: >
+      bash ~/.estate/libexec/backup-r2.sh {{apply}}

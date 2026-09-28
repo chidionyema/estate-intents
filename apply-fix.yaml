@@ -1,0 +1,5 @@
+name: apply-fix
+description: Write fixed test and verify gate
+halt_on_failure: false
+steps:
+  - cmd: "python3 /Users/roseonyema/.estate/intents/write-test2.py && wc -l /Users/roseonyema/Documents/code/idp/tests/test_local_claude_max_lane.py && git -C /Users/roseonyema/Documents/code/idp add tests/test_local_claude_max_lane.py && git -C /Users/roseonyema/Documents/code/idp diff --cached --stat"

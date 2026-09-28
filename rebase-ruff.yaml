@@ -1,0 +1,8 @@
+name: rebase-ruff
+description: Rebase ruff fix onto current feat/pobr
+halt_on_failure: false
+steps:
+  - name: run
+    timeout: 300
+    cmd: >
+      python3 /Users/roseonyema/.estate/scripts/rebase-ruff.py

@@ -1,0 +1,8 @@
+name: check-hook
+description: Check hook setup
+halt_on_failure: false
+steps:
+  - name: run
+    timeout: 15
+    cmd: >
+      bash /Users/roseonyema/.estate/scripts/check-hook.sh

@@ -1,0 +1,8 @@
+name: wait-shadow
+description: Wait for shadow-verify
+halt_on_failure: false
+steps:
+  - name: run
+    timeout: 360
+    cmd: >
+      python3 /Users/roseonyema/.estate/scripts/wait-shadow.py

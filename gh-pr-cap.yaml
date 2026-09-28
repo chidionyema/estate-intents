@@ -1,0 +1,7 @@
+name: gh-pr-cap
+description: Get pr-cap.yml content
+halt_on_failure: false
+steps:
+  - name: run
+    cmd: >
+      python3 /Users/roseonyema/.estate/scripts/gh-pr-cap.py

@@ -1,0 +1,50 @@
+name: mutation
+description: >
+  Polyglot mutation testing. Calls ~/.estate/libexec/mutation-run.py directly.
+  No daemon, no heredocs, no complex YAML.
+
+  Tiers:
+    diff    — syntax + import check (<5s)
+    commit  — mutmut 2.x, sqlite cache (1-3s for small files)
+    pr      — extended mutmut (up to 10min)
+    full    — nightly sharded
+
+args:
+  tier:
+    type: string
+    required: true
+  files:
+    type: string
+    default: ""
+  base:
+    type: string
+    default: origin/main
+  shard:
+    type: string
+    default: ""
+  install:
+    type: boolean
+    default: false
+  cwd:
+    type: string
+    default: "."
+
+halt_on_failure: false
+
+steps:
+  - name: ensure-tools
+    description: Ensure ~/bin/python symlink and mutmut installed
+    cmd: mkdir -p ~/bin && ln -sf /Library/Developer/CommandLineTools/usr/bin/python3 ~/bin/python && python3 -m pip install --user mutmut>=2.0,<3.0 2>&1 | tail -2; echo TOOLS_OK
+
+  - name: run
+    description: Run the mutation orchestrator script directly
+    cmd: |
+      estate_invoke intent=pobr-gate 2>&1 | head -10
+      bash -c "      python3 ~/.estate/libexec/mutation-run.py \
+        --tier {{tier}} \
+      "
+        --cwd {{cwd}} \
+        --files {{files}} \
+        --base {{base}} \
+        --shard {{shard}} \
+        --install

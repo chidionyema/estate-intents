@@ -1,0 +1,8 @@
+name: fix-test-file
+description: Remove non-executing test file
+halt_on_failure: false
+steps:
+  - name: run
+    timeout: 240
+    cmd: >
+      python3 /Users/roseonyema/.estate/scripts/fix-test-file.py

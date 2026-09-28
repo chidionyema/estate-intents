@@ -1,0 +1,38 @@
+name: rsa-platform-integrate
+description: Wire RSA into platform unified observability stack
+class: mutate
+args:
+  apply:
+    type: bool
+    default: false
+  repo:
+    type: string
+    default: /Users/roseonyema/Documents/code/idp
+halt_on_failure: false
+timeout: 300
+steps:
+  - name: platform-check
+    cmd: cd "<<repo>>" && ls platform/monitoring platform/fleetview-backend sovereign/voice 2>&1
+    timeout: 5
+  - name: write-registrations
+    cmd: python3 /Users/roseonyema/Documents/code/idp/platform/rsa/scripts/integrate.py 2>&1
+    timeout: 10
+  - name: verify-artifacts
+    cmd: |
+      estate_invoke intent=pobr-gate 2>&1 | head -10
+      bash -c "      cd /Users/roseonyema/Documents/code/idp
+      echo "Backstage catalog:"
+      "
+      head -5 platform/rsa/catalog-info.yaml
+      echo ""
+      echo "ServiceMonitor:"
+      cat platform/monitoring/rsa/servicemonitor.yaml | head -8
+      echo ""
+      echo "Fleetview registry:"
+      cat backstage/plugins/fleetview-backend/services.json 2>/dev/null | python3 -m json.tool | tail -15 || echo "no fleetview registry yet"
+    timeout: 5
+  - name: rebuild-agent
+    cmd: |
+      cd /Users/roseonyema/Documents/code/idp/platform/rsa
+      cargo build --workspace 2>&1 | tail -8
+    timeout: 300

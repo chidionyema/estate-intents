@@ -1,0 +1,58 @@
+name: backstage-real-render
+description: Use npm with valid versions
+class: mutate
+args:
+  apply:
+    type: bool
+    default: false
+  repo:
+    type: string
+    default: /Users/roseonyema/Documents/code/idp
+halt_on_failure: false
+timeout: 600
+steps:
+  - name: install
+    cmd: |
+      estate_invoke intent=pobr-gate 2>&1 | head -10
+      bash -c "      rm -rf /tmp/rsa-render/node_modules /tmp/rsa-render/package-lock.json
+      cd /tmp/rsa-render
+      "
+      npm install --legacy-peer-deps --no-audit --no-fund \
+        react@18.2.0 \
+        react-dom@18.2.0 \
+        @material-ui/core@4.12.4 \
+        @material-ui/icons@4.11.3 \
+        @emotion/react@11.10.6 \
+        @emotion/styled@11.10.6 \
+        tsx@4.7.0 \
+        @types/react@18.2.0 2>&1 | tail -8
+      echo ---
+      ls node_modules/react/package.json 2>&1
+      ls node_modules/react-dom/server.js 2>&1
+      ls node_modules/@material-ui/core/package.json 2>&1
+      ls node_modules/.bin/tsx 2>&1
+    timeout: 300
+  - name: copy-component
+    cmd: |
+      REPO="<<repo>>"
+      cp "$REPO/backstage/packages/app/src/modules/home/rsa.tsx" /tmp/rsa-render/rsa.tsx
+      wc -l /tmp/rsa-render/rsa.tsx
+    timeout: 5
+  - name: render
+    cmd: |
+      PROOF=/tmp/real-render.txt
+      : > "$PROOF"
+      cd /tmp/rsa-render
+      ./node_modules/.bin/tsx /tmp/rsa-render/render.cts.mjs 2>&1 | tee "$PROOF" | head -80
+      echo --
+      echo "PROOF END"
+      cat "$PROOF"
+    timeout: 120
+  - name: show
+    cmd: |
+      echo "ACTUAL rendered HTML on disk:"
+      ls -la /tmp/fleet-rsa-panel-actual.html 2>&1
+      echo
+      echo "First 60 lines:"
+      head -60 /tmp/fleet-rsa-panel-actual.html 2>&1
+    timeout: 5

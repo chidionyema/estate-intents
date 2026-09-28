@@ -1,0 +1,10 @@
+name: push-pr-gate-fix
+description: Stage and push the mutation-pr-gate.yml fix
+halt_on_failure: false
+steps:
+  - name: add
+    cmd: cd /Users/roseonyema/Documents/code/idp && git add .github/workflows/mutation-pr-gate.yml
+  - name: commit
+    cmd: "cd /Users/roseonyema/Documents/code/idp && git commit -m 'fix: clean mutation-pr-gate YAML workflow'"
+  - name: push
+    cmd: cd /Users/roseonyema/Documents/code/idp && git push origin feat/pobr

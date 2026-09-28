@@ -1,0 +1,5 @@
+name: fix-ci
+description: Get CI failure details and check if on main
+halt_on_failure: false
+steps:
+  - cmd: "python3 /Users/roseonyema/.estate/intents/fix-ci.py && echo '---MAIN CHECK---' && cd /Users/roseonyema/Documents/code/idp && git fetch origin main && gh run list --workflow fast-gate --branch main -L 1 --json status,conclusion"

@@ -1,0 +1,6 @@
+name: push-main
+description: Push main to origin/main
+steps:
+  - name: push
+    cmd: >
+      cd /Users/roseonyema/Documents/code/idp && git push origin main 2>&1

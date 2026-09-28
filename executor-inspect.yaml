@@ -1,0 +1,39 @@
+name: executor-inspect
+description: Inspect the estate executor daemon (pid 3554) and find daemon.py.
+
+steps:
+  - name: inspect
+    cmd: |
+      estate_invoke intent=pobr-gate 2>&1 | head -10
+      bash -c "      python3 - <<'PYEOF'
+      import subprocess
+      from pathlib import Path
+
+      # Check process 3554 full details
+      r = subprocess.run(
+          ["ps", "-p", "3554", "-o", "pid,ppid,state,etime,args"],
+          capture_output=True, text=True, timeout=5
+      )
+      print(f"Full process info:\n{r.stdout}")
+
+      # Find daemon.py
+      home = Path.home()
+      candidates = [
+          home / ".estate" / "bin" / "daemon.py",
+          home / ".estate" / "daemon.py",
+          home / "Documents" / "code" / "estate" / "daemon.py",
+          home / "Documents" / "code" / "idp" / "platform" / "executor" / "daemon.py",
+      ]
+      for c in candidates:
+          if c.exists():
+              print(f"Found daemon.py: {c}")
+              print(c.read_text()[:800])
+              break
+      else:
+          # Use lsof to find the executable
+          r2 = subprocess.run(
+              ["lsof", "-p", "3554"],
+              capture_output=True, text=True, timeout=5
+          )
+          print(f"lsof pid 3554:\n{r2.stdout[:1000]}")
+      PYEOF

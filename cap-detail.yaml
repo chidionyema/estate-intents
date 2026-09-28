@@ -1,0 +1,7 @@
+name: cap-detail
+description: Get cap check failure detail
+halt_on_failure: false
+steps:
+  - name: run
+    cmd: >
+      python3 /Users/roseonyema/.estate/scripts/cap-detail.py

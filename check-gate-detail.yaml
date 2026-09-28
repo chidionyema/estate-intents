@@ -1,0 +1,5 @@
+name: check-gate-detail
+description: Get mutation-pr-gate failure details
+halt_on_failure: false
+steps:
+  - cmd: "cd /Users/roseonyema/Documents/code/idp && gh run list --workflow mutation-pr-gate.yml --branch feat/pobr -L 1 --json databaseId | python3 -c \"import json,sys; d=json.load(sys.stdin); print(d[0]['databaseId'] if d else 'none')\""

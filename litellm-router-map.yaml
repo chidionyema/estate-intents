@@ -1,0 +1,21 @@
+name: litellm-router-map
+description: >
+  Complete 360° map of the estate's LiteLLM router — every entry point, exit point,
+  callback, lane, fallback chain, auth layer, audit surface, and platform relationship.
+  Run this when you need to understand, diagnose, or modify the router. Not a diagnosis
+  intent — this is the reference map. For diagnosis, use k8s.debug or hypotheses.race.
+
+args:
+  focus:
+    type: string
+    default: ""
+    help: >
+      Blank = full map. Or: lanes | callbacks | auth | fallbacks | secrets |
+      efficiency | audit | platform | startup | health | all
+
+halt_on_failure: false
+
+steps:
+  - name: map
+    cmd: >
+      python3 ~/.estate/libexec/litellm-router-map.py {{focus}}

@@ -1,0 +1,8 @@
+name: get-logs-raw
+description: Get raw logs with escape sequences
+halt_on_failure: false
+steps:
+  - name: run
+    timeout: 60
+    cmd: >
+      python3 /Users/roseonyema/.estate/scripts/get-logs-raw.py

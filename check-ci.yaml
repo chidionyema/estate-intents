@@ -1,0 +1,5 @@
+name: check-ci
+description: Read bin/idp-ci
+halt_on_failure: false
+steps:
+  - cmd: "cd /Users/roseonyema/Documents/code/idp && head -50 bin/idp-ci"
