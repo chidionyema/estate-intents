@@ -1,6 +1,0 @@
-name: graph-apply3
-description: Apply growmos AGENTS.md extraction
-steps:
-  - name: apply
-    cmd: >
-      growmos --root /Users/roseonyema/Documents/code/estate-graph apply extraction /Users/roseonyema/Documents/code/estate-graph/.growmos/cache/extract_src_9ec58db032eb_0.json --source src_9ec58db032eb --chunk 0 2>&1

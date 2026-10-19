@@ -1,8 +1,0 @@
-name: check-main-failures2
-description: Check main CI failures
-halt_on_failure: false
-steps:
-  - name: run
-    timeout: 60
-    cmd: >
-      python3 /Users/roseonyema/.estate/scripts/check-main-failures2.py

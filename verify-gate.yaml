@@ -1,5 +1,0 @@
-name: verify-gate
-description: Verify executes-gate passes
-halt_on_failure: false
-steps:
-  - cmd: "cd /Users/roseonyema/Documents/code/idp && git fetch origin main feat/pobr && SHA=d2f9b47eece13cf7ca1a6614058d431c70698cc3 && MERGE_BASE=$(git merge-base origin/main $SHA) && echo \"Base: $MERGE_BASE\" && bin/test-executes-gate \"$MERGE_BASE\" 2>&1; echo \"Exit: $?\""

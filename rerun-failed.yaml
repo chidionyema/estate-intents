@@ -1,5 +1,0 @@
-name: rerun-failed
-description: Rerun guarded-paths then poll until mergeable
-halt_on_failure: false
-steps:
-  - cmd: "cd /Users/roseonyema/Documents/code/idp && gh run rerun 36397088053 --job 108845941922"

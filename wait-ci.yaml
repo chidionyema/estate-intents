@@ -1,8 +1,0 @@
-name: wait-ci
-description: Wait for CI on PR 4731 and merge
-halt_on_failure: false
-steps:
-  - name: run
-    timeout: 900
-    cmd: >
-      python3 /Users/roseonyema/.estate/scripts/wait-ci.py

@@ -1,9 +1,0 @@
-name: commit-state
-description: Commit STATE.md update to crew repo
-steps:
-  - name: commit
-    cmd: >
-      cd /Users/roseonyema/Documents/code/crew && git add STATE.md && git commit -m "update STATE.md: executor revived, estate_executor.py restored via PR #4744" 2>&1
-  - name: push
-    cmd: >
-      cd /Users/roseonyema/Documents/code/crew && git push origin main 2>&1

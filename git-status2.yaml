@@ -1,7 +1,0 @@
-name: git-status2
-description: Get clean git status
-halt_on_failure: false
-steps:
-  - name: run
-    cmd: >
-      python3 /Users/roseonyema/.estate/scripts/git-status2.py

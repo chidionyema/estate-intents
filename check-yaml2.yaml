@@ -1,5 +1,0 @@
-name: check-yaml2
-description: Debug YAML parsing
-halt_on_failure: false
-steps:
-  - cmd: "cd /Users/roseonyema/Documents/code/idp && git show origin/main:.github/workflows/mutation-nightly.yml > /tmp/nightly.yml && python3 -c \"\nimport yaml\nwith open('/tmp/nightly.yml') as f:\n    try:\n        d = yaml.safe_load(f)\n        print('OK, keys:', list(d.keys()))\n    except yaml.YAMLError as e:\n        print('YAML ERROR:', e)\n        import re\n        msg = str(e)\n        m = re.search(r'line ([0-9]+)', msg)\n        if m:\n            lineno = int(m.group(1))\n            with open('/tmp/nightly.yml') as f2:\n                lines = f2.readlines()\n                for i in range(max(0,lineno-3), min(len(lines),lineno+2)):\n                    print(f'{i+1}: {repr(lines[i][:100])}')\n\" 2>&1"

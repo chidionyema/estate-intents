@@ -1,8 +1,0 @@
-name: check-e6250ee1
-description: Check format on e6250ee1
-halt_on_failure: false
-steps:
-  - name: run
-    timeout: 60
-    cmd: >
-      python3 /Users/roseonyema/.estate/scripts/check-e6250ee1.py

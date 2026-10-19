@@ -1,5 +1,0 @@
-name: check-file-sha
-description: Check file SHA on main vs PR
-halt_on_failure: false
-steps:
-  - cmd: "cd /Users/roseonyema/Documents/code/idp && git fetch origin main && git ls-tree origin/main -- tests/test_local_claude_max_lane.py && echo '---' && git ls-tree origin/feat/pobr -- tests/test_local_claude_max_lane.py && echo '---' && git ls-tree 2ba44abaf -- tests/test_local_claude_max_lane.py"

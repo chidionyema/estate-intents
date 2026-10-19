@@ -1,7 +1,0 @@
-name: check-4731
-description: Full PR 4731 status
-halt_on_failure: false
-steps:
-  - name: run
-    cmd: >
-      python3 /Users/roseonyema/.estate/scripts/check-4731.py

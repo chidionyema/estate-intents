@@ -1,8 +1,0 @@
-name: fix-conflicts4
-description: Reset to right commit and fix conflicts
-halt_on_failure: false
-steps:
-  - name: run
-    timeout: 300
-    cmd: >
-      python3 /Users/roseonyema/.estate/scripts/fix-conflicts4.py
